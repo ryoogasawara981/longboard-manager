@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Longboard Lesson 管理</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f4f0;color:#1a1a18;min-height:100vh;font-size:14px}
+.app{max-width:720px;margin:0 auto;padding:1rem}
+.header{background:#fff;border:0.5px solid #dddbd0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.logo{width:42px;height:42px;border-radius:50%;background:#FAC775;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.nav{display:flex;gap:3px;margin-bottom:1rem;background:#ebe9e3;border-radius:12px;padding:4px}
+.nav button{flex:1;padding:7px 2px;border:none;border-radius:8px;background:transparent;cursor:pointer;font-size:11px;color:#888780;font-family:inherit;line-height:1.4}
+.nav button.active{background:#fff;color:#1a1a18;font-weight:500;border:0.5px solid #dddbd0}
+.tab{display:none}.tab.active{display:block}
+.card{background:#fff;border:0.5px solid #dddbd0;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.card-title{font-size:15px;font-weight:500;margin-bottom:1rem;display:flex;align-items:center;gap:8px;color:#1a1a18}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500}
+.b-beg{background:#E6F1FB;color:#0C447C}
+.b-int{background:#EAF3DE;color:#27500A}
+.b-prv{background:#FAEEDA;color:#633806}
+.b-tkt{background:#FAEEDA;color:#633806}
+.b-nrm{background:#F1EFE8;color:#5F5E5A}
+.b-ok{background:#EAF3DE;color:#27500A}
+.b-ng{background:#FCEBEB;color:#A32D2D}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat-card{background:#fff;border:0.5px solid #dddbd0;border-radius:8px;padding:12px;text-align:center}
+.stat-num{font-size:24px;font-weight:500}
+.stat-label{font-size:11px;color:#888780;margin-top:2px}
+.btn{padding:7px 14px;border-radius:8px;border:0.5px solid #b4b2a9;background:transparent;cursor:pointer;font-family:inherit;font-size:13px;color:#1a1a18}
+.btn:hover{background:#f5f4f0}
+.btn-primary{background:#FAC775;border-color:#EF9F27;color:#412402;font-weight:500}
+.btn-primary:hover{background:#EF9F27}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-danger{color:#a32d2d;border-color:#f7c1c1}
+.apply-row{border-bottom:0.5px solid #ebe9e3;padding:10px 0;cursor:pointer}
+.apply-row:last-child{border-bottom:none}
+.apply-row:hover{background:#fafaf8}
+.apply-head{display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap}
+.apply-name{font-size:14px;font-weight:500}
+.apply-date{font-size:11px;color:#888780;margin-left:auto}
+.apply-meta{font-size:12px;color:#888780}
+.detail-panel{display:none;background:#f5f4f0;border-radius:10px;padding:1rem;margin-top:8px;border:0.5px solid #dddbd0}
+.detail-panel.open{display:block}
+.detail-grid{display:grid;grid-template-columns:140px 1fr;gap:6px 12px}
+.detail-label{font-size:12px;color:#888780;padding-top:1px}
+.detail-value{font-size:13px;color:#1a1a18}
+.member-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid #ebe9e3}
+.member-row:last-child{border-bottom:none}
+.avatar{width:36px;height:36px;border-radius:50%;background:#FAC775;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#412402;flex-shrink:0}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:14px;font-weight:500}
+.member-meta{font-size:12px;color:#888780;margin-top:2px}
+.ticket-bar{display:flex;gap:3px;margin-top:5px;flex-wrap:wrap}
+.tdot{width:13px;height:13px;border-radius:50%;background:#EF9F27;display:inline-block}
+.tdot.used{background:#dddbd0}
+.lbtn{padding:6px 14px;border-radius:8px;border:0.5px solid #dddbd0;background:transparent;cursor:pointer;font-size:13px;color:#888780;font-family:inherit}
+.lbtn.sel{border-color:#EF9F27;background:#FAEEDA;color:#633806;font-weight:500}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:12px;color:#888780;margin-bottom:4px}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:7px 11px;border:0.5px solid #dddbd0;border-radius:8px;font-family:inherit;font-size:13px;background:#fff;color:#1a1a18;outline:none}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{border-color:#EF9F27}
+.form-row textarea{min-height:80px;resize:vertical}
+.info-box{padding:10px 12px;background:#E6F1FB;border-radius:8px;margin-bottom:12px;font-size:13px;color:#0C447C;display:flex;align-items:flex-start;gap:6px}
+.warn-box{padding:10px 12px;background:#FAEEDA;border-radius:8px;margin-bottom:12px;font-size:13px;color:#633806;display:flex;align-items:flex-start;gap:6px}
+.success-box{padding:10px 12px;background:#EAF3DE;border-radius:8px;margin-bottom:12px;font-size:13px;color:#27500A;display:flex;align-items:flex-start;gap:6px}
+.survey-row{border-bottom:0.5px solid #ebe9e3;padding:10px 0;cursor:pointer}
+.survey-row:last-child{border-bottom:none}
+.survey-row:hover{background:#fafaf8}
+.scale-bar{display:flex;align-items:center;gap:6px;margin:3px 0}
+.scale-fill{height:6px;border-radius:3px;background:#EF9F27}
+.scale-bg{flex:1;height:6px;border-radius:3px;background:#ebe9e3}
+.filter-tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.ftab{padding:5px 12px;border-radius:20px;border:0.5px solid #dddbd0;background:transparent;cursor:pointer;font-size:12px;color:#888780;font-family:inherit}
+.ftab.active{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.count-box{background:#f5f4f0;border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.loading{text-align:center;padding:2rem;color:#888780;font-size:13px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid #dddbd0;border-top-color:#EF9F27;border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+.inq-row{padding:10px 0;border-bottom:0.5px solid #ebe9e3}
+.inq-row:last-child{border-bottom:none}
+.refresh-btn{float:right;font-size:12px;color:#888780;cursor:pointer;border:none;background:none;font-family:inherit}
+.refresh-btn:hover{color:#1a1a18}
+.last-updated{font-size:11px;color:#888780;margin-bottom:8px}
+.b-past{background:#F1EFE8;color:#888780}
+.section-label{font-size:12px;font-weight:500;color:#888780;padding:8px 0 4px;border-bottom:0.5px solid #ebe9e3;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.apply-row.past{opacity:0.6}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">🛹</div>
+    <div>
+      <div style="font-size:16px;font-weight:500">Longboard Lesson 管理</div>
+      <div style="font-size:12px;color:#888780">小笠原亮 — インストラクター管理画面</div>
+    </div>
+    <div style="margin-left:auto;font-size:12px;color:#888780" id="today-date"></div>
+  </div>
+
+  <nav class="nav">
+    <button class="active" onclick="goTab('dashboard')"><i class="ti ti-home"></i><br>ホーム</button>
+    <button onclick="goTab('apply')"><i class="ti ti-forms"></i><br>申し込み</button>
+    <button onclick="goTab('members')"><i class="ti ti-users"></i><br>メンバー</button>
+    <button onclick="goTab('payment')"><i class="ti ti-ticket"></i><br>回数券</button>
+    <button onclick="goTab('announce')"><i class="ti ti-speakerphone"></i><br>連絡</button>
+    <button onclick="goTab('survey')"><i class="ti ti-clipboard-list"></i><br>アンケート</button>
+  </nav>
+
+  <!-- ホーム -->
+  <div id="tab-dashboard" class="tab active">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-num" id="st-beg">—</div><div class="stat-label">初級 申し込み</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-int">—</div><div class="stat-label">中級 申し込み</div></div>
+      <div class="stat-card"><div class="stat-num" id="st-prv">—</div><div class="stat-label">プライベート</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-calendar-event"></i> 直近のレッスン
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#f5f4f0;border-radius:8px">
+          <div style="text-align:center;min-width:38px"><div style="font-size:18px;font-weight:500" id="next-beg-day">—</div><div style="font-size:10px;color:#888780">初級</div></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">Beginners Class</div><div style="font-size:12px;color:#888780">第3日曜 / 12:00〜14:00 / 東京臨海広域防災公園</div></div>
+          <span class="badge b-beg" id="dash-beg-count">読込中</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px;background:#f5f4f0;border-radius:8px">
+          <div style="text-align:center;min-width:38px"><div style="font-size:18px;font-weight:500">7/5</div><div style="font-size:10px;color:#888780">中級</div></div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:500">Intermediate Class</div><div style="font-size:12px;color:#888780">次回 7月5日（日）/ 12:00〜14:00 / 東京臨海広域防災公園</div></div>
+          <span class="badge b-int" id="dash-int-count">読込中</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-mail"></i> 最新の申し込み
+        <button class="refresh-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> 更新</button>
+      </div>
+      <div id="dash-recent"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+    <div class="info-box">
+      <i class="ti ti-info-circle"></i>
+      <div>データはGoogleスプレッドシートからリアルタイムで読み込んでいます。<br>最新情報に更新するには「更新」ボタンを押してください。</div>
+    </div>
+  </div>
+
+  <!-- 申し込みタブ -->
+  <div id="tab-apply" class="tab">
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-forms"></i> 申し込み一覧
+        <button class="refresh-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> 更新</button>
+      </div>
+      <div class="filter-tabs" id="apply-filters">
+        <button class="ftab active" onclick="filterApply('all',this)">すべて</button>
+        <button class="ftab" onclick="filterApply('beginner',this)">初級クラス</button>
+        <button class="ftab" onclick="filterApply('intermediate',this)">中級クラス</button>
+        <button class="ftab" onclick="filterApply('private',this)">プライベート</button>
+      </div>
+      <div class="last-updated" id="apply-updated"></div>
+      <div id="apply-list"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-user-plus"></i> 申し込みを手動追加</div>
+      <div class="form-row"><label>クラス</label>
+        <select id="man-cls"><option value="beginner">初級</option><option value="intermediate">中級</option><option value="private">プライベート</option></select>
+      </div>
+      <div class="form-row"><label>お名前</label><input type="text" id="man-name" placeholder="山田 太郎"></div>
+      <div class="form-row"><label>メールアドレス</label><input type="email" id="man-email" placeholder="example@email.com"></div>
+      <div class="form-row"><label>電話番号</label><input type="tel" id="man-tel" placeholder="090-0000-0000"></div>
+      <div class="form-row"><label>Instagram</label><input type="text" id="man-ig" placeholder="@username"></div>
+      <div class="form-row"><label>SNS掲載</label>
+        <select id="man-sns"><option value="許可する">許可する</option><option value="許可しない">許可しない</option></select>
+      </div>
+      <div class="form-row"><label>備考</label><input type="text" id="man-note" placeholder="参加希望日・支払い方法など"></div>
+      <button class="btn btn-primary" onclick="addManualApply()"><i class="ti ti-plus"></i> 追加する</button>
+    </div>
+  </div>
+
+  <!-- メンバー -->
+  <div id="tab-members" class="tab">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-users"></i> メンバー一覧</div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input type="text" id="search-input" placeholder="名前で検索..." style="flex:1;padding:7px 12px;border:0.5px solid #dddbd0;border-radius:8px;font-size:13px" oninput="renderMembers()">
+      </div>
+      <div id="member-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><i class="ti ti-user-plus"></i> メンバーを手動追加</div>
+      <div class="form-row"><label>お名前</label><input type="text" id="new-name" placeholder="山田 太郎"></div>
+      <div class="form-row"><label>メールアドレス</label><input type="email" id="new-email" placeholder="example@email.com"></div>
+      <div class="form-row"><label>電話番号</label><input type="tel" id="new-tel" placeholder="090-0000-0000"></div>
+      <div class="form-row"><label>Instagram</label><input type="text" id="new-ig" placeholder="@username"></div>
+      <div class="form-row"><label>クラス</label>
+        <select id="new-class"><option value="beginner">初級</option><option value="intermediate">中級</option><option value="private">プライベート</option></select>
+      </div>
+      <div class="form-row"><label>支払い方法</label>
+        <select id="new-pay"><option value="normal">通常（3,000円/回）</option><option value="ticket">回数券（5回 12,500円）</option></select>
+      </div>
+      <button class="btn btn-primary" onclick="addMember()"><i class="ti ti-plus"></i> 追加する</button>
+    </div>
+  </div>
+
+  <!-- 回数券 -->
+  <div id="tab-payment" class="tab">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-ticket"></i> 回数券の管理</div>
+      <div class="warn-box"><i class="ti ti-info-circle"></i> 回数券：5回分 12,500円（1回あたり 2,500円）通常より500円お得</div>
+      <div id="ticket-list"></div>
+    </div>
+  </div>
+
+  <!-- 連絡 -->
+  <div id="tab-announce" class="tab">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-speakerphone"></i> 参加者への一斉連絡</div>
+      <div class="form-row"><label>連絡するレッスン</label>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+          <button class="lbtn sel" onclick="selLesson(this,'beginner')">初級クラス</button>
+          <button class="lbtn" onclick="selLesson(this,'intermediate')">中級クラス</button>
+          <button class="lbtn" onclick="selLesson(this,'all')">全員</button>
+        </div>
+      </div>
+      <div class="count-box">
+        <div style="font-size:12px;color:#888780;margin-bottom:2px">送信対象</div>
+        <div style="font-size:13px;font-weight:500" id="announce-count">初級クラス申し込み者</div>
+      </div>
+      <div class="form-row"><label>件名</label><input type="text" id="ann-subject" placeholder="【重要】レッスンの開催について"></div>
+      <div class="form-row"><label>メッセージ</label><textarea id="ann-body" rows="6"></textarea></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <button class="btn btn-sm" onclick="tpl('open')">✅ 開催</button>
+        <button class="btn btn-sm" onclick="tpl('cancel')">❌ 中止</button>
+        <button class="btn btn-sm" onclick="tpl('postpone')">🔄 延期</button>
+        <button class="btn btn-sm" onclick="tpl('detail')">📋 詳細案内</button>
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="sendAnn()"><i class="ti ti-send"></i> 一斉送信する</button>
+    </div>
+  </div>
+
+  <!-- アンケート -->
+  <div id="tab-survey" class="tab">
+    <div class="card">
+      <div class="card-title">
+        <i class="ti ti-clipboard-list"></i> アンケート回答一覧
+        <button class="refresh-btn" onclick="loadAll()"><i class="ti ti-refresh"></i> 更新</button>
+      </div>
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="filterSurvey('all',this)">すべて</button>
+        <button class="ftab" onclick="filterSurvey('beginner',this)">初級</button>
+        <button class="ftab" onclick="filterSurvey('intermediate',this)">中級</button>
+      </div>
+      <div class="last-updated" id="survey-updated"></div>
+      <div id="survey-list"><div class="loading"><span class="spinner"></span>読み込み中...</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// Google Apps Script API エンドポイント
+// ============================================================
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzb6zTb87OrnmiffkBFSCA07et8o20EZui_RApQSWmshIcQi5XL4xhakUExhhMrDBon/exec';
+
+// ============================================================
+// Google Apps Script経由でデータを取得する
+// ============================================================
+async function fetchAllData() {
+  const res = await fetch(GAS_URL);
+  if (!res.ok) throw new Error('データ取得失敗');
+  return await res.json();
+}
+
+// ============================================================
+// グローバルデータ
+// ============================================================
+let allApplications = [];
+let allSurveys = [];
+let members = JSON.parse(localStorage.getItem('lb_members') || '[]');
+// 旧データのクリーンアップ：個人情報なしの「まつもとりか」と「松本 梨花」を削除
+members = members.filter(m => !(m.name === '松本 梨花') && !(m.name === 'まつもとりか' && !m.email));
+let currentApplyFilter = 'all';
+let currentSurveyFilter = 'all';
+let openApplyId = null;
+let openSurveyId = null;
+let announceTarget = 'beginner';
+
+const clsL = {beginner:'初級', intermediate:'中級', private:'プライベート'};
+const clsB = {beginner:'b-beg', intermediate:'b-int', private:'b-prv'};
+
+document.getElementById('today-date').textContent = new Date().toLocaleDateString('ja-JP',{year:'numeric',month:'long'});
+
+// ============================================================
+// 次回レッスン日を計算
+// ============================================================
+function getNextThirdSunday() {
+  const now = new Date();
+  for (let m = 0; m <= 2; m++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + m, 1);
+    let count = 0;
+    while (true) {
+      if (d.getDay() === 0) count++;
+      if (count === 3) break;
+      d.setDate(d.getDate() + 1);
+    }
+    if (d >= now) return d;
+  }
+}
+function getNextFirstSunday() {
+  const now = new Date();
+  for (let m = 0; m <= 2; m++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + m, 1);
+    while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
+    if (d >= now) return d;
+  }
+}
+
+// ============================================================
+// データ読み込み
+// ============================================================
+async function loadAll() {
+  document.getElementById('apply-list').innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  document.getElementById('dash-recent').innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  document.getElementById('survey-list').innerHTML = '<div class="loading"><span class="spinner"></span>読み込み中...</div>';
+  document.getElementById('dash-beg-count').textContent = '読込中';
+  document.getElementById('dash-int-count').textContent = '読込中';
+
+  let data;
+  try {
+    data = await fetchAllData();
+  } catch(e) {
+    const msg = '<div style="color:#a32d2d;text-align:center;padding:1rem;font-size:13px">⚠️ データの読み込みに失敗しました。<br>しばらく待ってから「更新」を押してください。</div>';
+    document.getElementById('apply-list').innerHTML = msg;
+    document.getElementById('dash-recent').innerHTML = msg;
+    document.getElementById('survey-list').innerHTML = msg;
+    return;
+  }
+
+  const begRows     = data.beginner     || [];
+  const intRows     = data.intermediate || [];
+  const prvRows     = data.private      || [];
+  const survBegRows = data.surveyBeg    || [];
+  const survIntRows = data.surveyInt    || [];
+
+  allApplications = [];
+
+  begRows.forEach((r, i) => {
+    if ((r['名前']||'').includes('小笠原')) return;
+    allApplications.push({ id:'b'+i, cls:'beginner', raw:r,
+      name: r['名前']||'', email: r['メールアドレス']||'',
+      tel: r['電話番号']||'', instagram: r['Instagramアカウント(お持ちであれば)']||'',
+      date: r['タイムスタンプ']||'', sns: r['写真や動画の撮影・SNS掲載の可否']||''
+    });
+  });
+
+  intRows.forEach((r, i) => {
+    if ((r['名前']||'').includes('小笠原')) return;
+    allApplications.push({ id:'m'+i, cls:'intermediate', raw:r,
+      name: r['名前']||'', email: r['メールアドレス']||'',
+      tel: r['電話番号']||'', instagram: r['Instagramアカウント(お持ちであれば)']||'',
+      date: r['タイムスタンプ']||'', sns: r['写真や動画の撮影・SNS掲載の可否']||''
+    });
+  });
+
+  prvRows.forEach((r, i) => {
+    if ((r['名前']||'').includes('小笠原')) return;
+    allApplications.push({ id:'p'+i, cls:'private', raw:r,
+      name: r['名前']||'', email: r['メールアドレス']||'',
+      tel: r['電話番号']||'', instagram: r['Instagramアカウント（お持ちであれば）']||'',
+      date: r['タイムスタンプ']||'', sns: r['写真や動画の撮影・SNS掲載の可否']||''
+    });
+  });
+
+  allSurveys = [];
+  survBegRows.forEach((r, i) => {
+    allSurveys.push({ id:'sb'+i, cls:'beginner', raw:r,
+      name: r['名前']||'（匿名）', date: r['タイムスタンプ']||''
+    });
+  });
+  survIntRows.forEach((r, i) => {
+    allSurveys.push({ id:'si'+i, cls:'intermediate', raw:r,
+      name: r['名前']||'（匿名）', date: r['タイムスタンプ']||''
+    });
+  });
+
+  const now = new Date().toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('apply-updated').textContent = '最終更新：'+now;
+  document.getElementById('survey-updated').textContent = '最終更新：'+now;
+
+  updateStats();
+  renderApplyList();
+  renderDashRecent();
+  renderSurveys();
+  updateNextLessonDays();
+  syncMembersFromApplications();
+  renderMembers();
+  renderTickets();
+}
+
+function updateNextLessonDays() {
+  const beg = getNextThirdSunday();
+  const int_ = getNextFirstSunday();
+  if (beg) document.getElementById('next-beg-day').textContent = (beg.getMonth()+1)+'/'+ beg.getDate();
+  if (int_) document.getElementById('next-int-day').textContent = (int_.getMonth()+1)+'/'+int_.getDate();
+}
+
+function updateStats() {
+  const bCnt = allApplications.filter(a=>a.cls==='beginner').length;
+  // 中級は終了済みを除いた次回以降のみカウント
+  const iCnt = allApplications.filter(a=>a.cls==='intermediate' && !isPastIntLesson(a.raw)).length;
+  const pCnt = allApplications.filter(a=>a.cls==='private').length;
+  document.getElementById('st-beg').textContent = bCnt;
+  document.getElementById('st-int').textContent = iCnt;
+  document.getElementById('st-prv').textContent = pCnt;
+
+  // ホームの直近レッスンカード：終了済みは「終了」と表示
+  const begCard = allApplications.filter(a=>a.cls==='beginner').length;
+  const intPast = allApplications.filter(a=>a.cls==='intermediate' && isPastIntLesson(a.raw)).length;
+  const intNext = allApplications.filter(a=>a.cls==='intermediate' && !isPastIntLesson(a.raw)).length;
+
+  document.getElementById('dash-beg-count').textContent = begCard+'名申込';
+
+  if (intNext > 0) {
+    document.getElementById('dash-int-count').textContent = intNext+'名申込';
+    document.getElementById('dash-int-count').className = 'badge b-int';
+  } else {
+    document.getElementById('dash-int-count').textContent = '申込 0名';
+    document.getElementById('dash-int-count').className = 'badge b-int';
+  }
+}
+
+// ============================================================
+// ホーム：最新申し込み
+// ============================================================
+function renderDashRecent() {
+  const recent = allApplications.slice(-5).reverse();
+  if (recent.length === 0) {
+    document.getElementById('dash-recent').innerHTML = '<div style="color:#888780;text-align:center;padding:1rem;font-size:13px">申し込みがありません</div>';
+    return;
+  }
+  document.getElementById('dash-recent').innerHTML = recent.map(a => `
+    <div class="inq-row">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:500">${a.name}</span>
+        <span class="badge ${clsB[a.cls]}">${clsL[a.cls]}</span>
+        <span style="font-size:11px;color:#888780;margin-left:auto">${a.date.split(' ')[0]||''}</span>
+      </div>
+      <div style="font-size:12px;color:#888780">${a.email}${a.tel?' ／ '+a.tel:''}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+// 申し込み一覧
+// ============================================================
+function filterApply(f, btn) {
+  currentApplyFilter = f;
+  document.querySelectorAll('#apply-filters .ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  openApplyId = null;
+  renderApplyList();
+}
+
+// ============================================================
+// 申し込み（手動追加分をローカル保存）
+// ============================================================
+let manualApplications = JSON.parse(localStorage.getItem('lb_manual_apps') || '[]');
+function saveManualApps() { localStorage.setItem('lb_manual_apps', JSON.stringify(manualApplications)); }
+
+function addManualApply() {
+  const name = document.getElementById('man-name').value.trim();
+  const email = document.getElementById('man-email').value.trim();
+  if (!name) { alert('お名前は必須です'); return; }
+  const entry = {
+    id: 'manual_' + Date.now(),
+    cls: document.getElementById('man-cls').value,
+    name, email,
+    tel: document.getElementById('man-tel').value.trim(),
+    instagram: document.getElementById('man-ig').value.trim(),
+    sns: document.getElementById('man-sns').value,
+    date: new Date().toLocaleDateString('ja-JP'),
+    note: document.getElementById('man-note').value.trim(),
+    isManual: true,
+    raw: {}
+  };
+  manualApplications.push(entry);
+  saveManualApps();
+  ['man-name','man-email','man-tel','man-ig','man-note'].forEach(id => document.getElementById(id).value = '');
+  renderApplyList();
+  alert('✓ '+name+'さんの申し込みを追加しました');
+}
+
+function deleteManualApply(id) {
+  manualApplications = manualApplications.filter(a => a.id !== id);
+  saveManualApps();
+  renderApplyList();
+}
+const PAST_INT_DATES = ['6月7日','6月1日','5月']; // ここに終わった回を追加していく
+const NEXT_INT_DATE  = '7月5日'; // 次回
+
+function isPastIntLesson(raw) {
+  const d = raw['参加希望日・内容'] || '';
+  return PAST_INT_DATES.some(p => d.includes(p));
+}
+
+function renderApplyList() {
+  // スプレッドシート分＋手動追加分を結合
+  const combined = [...allApplications, ...manualApplications];
+  let list = combined.filter(a => currentApplyFilter==='all' || a.cls===currentApplyFilter);
+  if (list.length === 0) {
+    document.getElementById('apply-list').innerHTML = '<div style="color:#888780;text-align:center;padding:1rem;font-size:13px">申し込みがありません</div>';
+    return;
+  }
+
+  // 中級を「次回」と「終了済み」に分ける
+  const upcoming = list.filter(a => a.cls !== 'intermediate' || !isPastIntLesson(a.raw));
+  const past     = list.filter(a => a.cls === 'intermediate' && isPastIntLesson(a.raw));
+
+  let html = '';
+
+  if (upcoming.length > 0) {
+    if (past.length > 0) html += `<div class="section-label"><i class="ti ti-calendar-event"></i> 次回・今後の申し込み</div>`;
+    html += upcoming.map(a => buildApplyRow(a, false)).join('');
+  }
+
+  if (past.length > 0) {
+    html += `<div class="section-label" style="margin-top:12px"><i class="ti ti-circle-check"></i> 終了済み（6月7日 中級クラス）</div>`;
+    html += past.map(a => buildApplyRow(a, true)).join('');
+  }
+
+  document.getElementById('apply-list').innerHTML = html;
+}
+
+function buildApplyRow(a, isPast) {
+  const isOpen = openApplyId === a.id;
+  const snsOk = a.sns === '許可する';
+  return `<div class="apply-row${isPast?' past':''}" onclick="toggleApply('${a.id}')">
+    <div class="apply-head">
+      <span class="apply-name">${a.name}</span>
+      <span class="badge ${clsB[a.cls]}">${clsL[a.cls]}</span>
+      ${isPast ? '<span class="badge b-past">終了済み</span>' : ''}
+      ${a.isManual ? '<span class="badge" style="background:#f0e6fb;color:#6b21a8">手動</span>' : ''}
+      <span class="badge ${snsOk?'b-ok':'b-ng'}">SNS${snsOk?'可':'不可'}</span>
+      <span class="apply-date">${(a.date||'').split(' ')[0]||''}</span>
+    </div>
+    <div class="apply-meta">${a.email||''}${a.tel?' ／ '+a.tel:''}${a.instagram?' ／ '+a.instagram:''}</div>
+    ${a.note ? `<div class="apply-meta" style="color:#633806">備考：${a.note}</div>` : ''}
+    <div class="detail-panel ${isOpen?'open':''}" id="detail-${a.id}" onclick="event.stopPropagation()">
+      ${a.isManual
+        ? `<div style="color:#888780;font-size:13px">手動追加の申し込みです。</div>
+           <div style="margin-top:10px;display:flex;gap:6px">
+             ${a.email ? `<a href="mailto:${a.email}" class="btn btn-sm"><i class="ti ti-mail"></i> メールする</a>` : ''}
+             <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteManualApply('${a.id}')"><i class="ti ti-trash"></i> 削除</button>
+           </div>`
+        : buildDetailHTML(a)
+      }
+    </div>
+  </div>`;
+}
+
+function buildDetailHTML(a) {
+  const r = a.raw;
+  let rows = [];
+
+  if (a.cls === 'beginner') {
+    rows = [
+      ['参加希望日', r['参加希望日']],
+      ['年齢', r['年齢']],
+      ['性別', r['性別']],
+      ['ロングボード経験', r['ロングボード経験の有無']],
+      ['スケボー経験', r['スケボー経験の有無']],
+      ['自分の板', r['自分の板を持っているか']],
+      ['プロテクター', r['プロテクターを持っているか']],
+      ['レンタル希望品', r['レンタルを希望する品目']||'なし'],
+      ['怪我・持病', r['怪我や持病など事前に共有したいこと']||'なし'],
+      ['SNS掲載', r['写真や動画の撮影・SNS掲載の可否']],
+    ];
+  } else if (a.cls === 'intermediate') {
+    rows = [
+      ['参加希望日', r['参加希望日・内容']],
+      ['支払いプラン', r['お支払いプラン']],
+      ['練習したいこと', r['現在練習中のステップやトリック、または本日の講習で特に学びたいことを教えてください']],
+      ['自分の板', r['自分の板を持っているか']],
+      ['SNS掲載', r['写真や動画の撮影・SNS掲載の可否']],
+    ];
+  } else {
+    rows = [
+      ['希望日程（第1）', r['希望日時 第一候補']],
+      ['希望日程（第2）', r['希望日時 第二候補']],
+      ['年齢', r['年齢']],
+      ['性別', r['性別']],
+      ['ロングボード経験', r['ロングボード経験の有無']],
+      ['スケボー経験', r['スケボー経験の有無']],
+      ['ロンスケ歴', r['ロンスケ歴（年数）']],
+      ['現在のレベル', r['現在のレベル・できること']],
+      ['レッスンの目標', r['レッスンで練習したいこと・目標']],
+      ['参考ライダー', r['目標としているライダーのInstagramアカウント名（わかれば）']||'なし'],
+      ['自分の板', r['自分の板を持っているか']],
+      ['怪我・持病', r['怪我や持病など事前に共有したいこと']||'なし'],
+      ['知ったきっかけ', r['プライベートレッスンを知ったきっかけ']],
+      ['SNS掲載', r['写真や動画の撮影・SNS掲載の可否']],
+    ];
+  }
+
+  return `<div class="detail-grid">${rows.map(([l,v])=>`
+    <div class="detail-label">${l}</div>
+    <div class="detail-value">${v||'—'}</div>
+  `).join('')}</div>
+  <div style="margin-top:10px;display:flex;gap:6px">
+    <a href="mailto:${a.email}?subject=【ロングボードレッスン】詳細のご案内" class="btn btn-sm"><i class="ti ti-mail"></i> メールする</a>
+  </div>`;
+}
+
+function toggleApply(id) {
+  openApplyId = (openApplyId === id) ? null : id;
+  renderApplyList();
+}
+
+// ============================================================
+// メンバー（申し込みデータから自動生成 + 手動追加分をローカル保存）
+// ============================================================
+function saveMembers() { localStorage.setItem('lb_members', JSON.stringify(members)); }
+
+// 申し込みデータからメンバー一覧を生成（重複はメール・名前で除外）
+function syncMembersFromApplications() {
+  // 手動追加分を保持（ただし名前だけの「まつもとりか」は除外）
+  const manual = members.filter(m => m.manual && !(m.name === 'まつもとりか' && !m.email));
+
+  // 申し込みデータから全員を取得
+  const fromApps = [];
+  const seen = new Set();
+  allApplications.forEach(a => {
+    const key = (a.email || a.name || '').toLowerCase();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    if (manual.some(m => (m.email||'').toLowerCase() === key)) return;
+    const payPlan = a.raw['お支払いプラン'] || '';
+    const isTicket = payPlan.includes('回数券');
+    fromApps.push({
+      name: a.name, email: a.email, tel: a.tel,
+      ig: a.instagram, cls: a.cls,
+      pay: isTicket ? 'ticket' : 'normal',
+      tickets: isTicket ? 5 : 0, used: 0,
+      manual: false
+    });
+  });
+
+  // まつもとりかさんがappsデータにいるか確認
+  const rikaInApps = fromApps.some(m => m.email === 'rika.k.matsu@gmail.com');
+  if (rikaInApps) {
+    // appsから来た場合：回数券情報を上書き。usedはローカル保存値を優先
+    const savedRika = members.find(m => m.email === 'rika.k.matsu@gmail.com');
+    fromApps.forEach(m => {
+      if (m.email === 'rika.k.matsu@gmail.com') {
+        m.pay = 'ticket';
+        m.tickets = savedRika ? savedRika.tickets : 5;
+        m.used    = savedRika ? savedRika.used    : 1;
+      }
+    });
+  } else {
+    const alreadyManual = manual.some(m => m.email === 'rika.k.matsu@gmail.com');
+    if (!alreadyManual) {
+      // ローカルに保存済みがあればそちらを使う
+      const saved = members.find(m => m.email === 'rika.k.matsu@gmail.com');
+      manual.push({
+        name: 'まつもとりか', email: 'rika.k.matsu@gmail.com',
+        tel: '09058199232', ig: '@r.8star_lsk8',
+        cls: 'intermediate', pay: 'ticket',
+        tickets: saved ? saved.tickets : 5,
+        used:    saved ? saved.used    : 1,
+        manual: true
+      });
+    }
+  }
+
+  members = [...manual, ...fromApps];
+  saveMembers();
+}
+
+function renderMembers() {
+  const q = (document.getElementById('search-input').value||'').toLowerCase();
+  const filtered = members.filter(m => !q || m.name.toLowerCase().includes(q));
+  document.getElementById('member-list').innerHTML = filtered.length === 0
+    ? '<div style="color:#888780;text-align:center;padding:1rem;font-size:13px">メンバーが見つかりません</div>'
+    : filtered.map(m => {
+      const ri = members.indexOf(m);
+      const init = m.name.split(/\s+/).map(n=>n[0]).join('').slice(0,2);
+      return `<div class="member-row">
+        <div class="avatar">${init}</div>
+        <div class="member-info">
+          <div class="member-name">${m.name}</div>
+          <div class="member-meta">${m.email}${m.ig?' ／ '+m.ig:''}</div>
+          <div class="member-meta">${m.tel||''}</div>
+        </div>
+        <span class="badge ${clsB[m.cls]}">${clsL[m.cls]}</span>
+        <span class="badge ${m.pay==='ticket'?'b-tkt':'b-nrm'}">${m.pay==='ticket'?'回数券':'通常'}</span>
+        <button class="btn btn-sm btn-danger" onclick="delMember(${ri})"><i class="ti ti-trash"></i></button>
+      </div>`;
+    }).join('');
+}
+
+function addMember() {
+  const name = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  if (!name||!email) { alert('名前とメールアドレスは必須です'); return; }
+  const pay = document.getElementById('new-pay').value;
+  members.push({ name, email,
+    tel: document.getElementById('new-tel').value,
+    ig: document.getElementById('new-ig').value,
+    cls: document.getElementById('new-class').value,
+    pay, tickets: pay==='ticket'?5:0, used:0,
+    manual: true
+  });
+  saveMembers(); renderMembers(); renderTickets();
+  ['new-name','new-email','new-tel','new-ig'].forEach(id=>document.getElementById(id).value='');
+  alert('✓ '+name+'さんを追加しました');
+}
+
+function delMember(i) {
+  if (confirm(members[i].name+'を削除しますか？')) {
+    members.splice(i,1); saveMembers(); renderMembers(); renderTickets();
+  }
+}
+
+// ============================================================
+// 回数券
+// ============================================================
+function renderTickets() {
+  const holders = members.filter(m=>m.pay==='ticket');
+  document.getElementById('ticket-list').innerHTML = holders.length === 0
+    ? '<div style="color:#888780;text-align:center;padding:1rem;font-size:13px">回数券保有者がいません</div>'
+    : holders.map(m => {
+      const rem = m.tickets - m.used;
+      const dots = Array(m.tickets).fill(0).map((_,j)=>`<span class="tdot${j<m.used?' used':''}"></span>`).join('');
+      const idx = members.indexOf(m);
+      return `<div class="member-row">
+        <div class="avatar">${m.name.split(/\s+/).map(n=>n[0]).join('').slice(0,2)}</div>
+        <div class="member-info">
+          <div class="member-name">${m.name}</div>
+          <div style="font-size:12px;color:#888780">残り <strong style="color:#1a1a18">${rem}</strong> 回 ／ 計${m.tickets}回</div>
+          <div class="ticket-bar">${dots}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+          <button class="btn btn-sm" onclick="useTicket(${idx})" ${rem<=0?'disabled style="opacity:.4"':''}>1回使う</button>
+          <button class="btn btn-sm" style="background:#FAEEDA;border-color:#EF9F27;color:#633806" onclick="buyTicket(${idx})">追加購入</button>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+function useTicket(i) {
+  if (members[i].tickets-members[i].used<=0) { alert('残りがありません'); return; }
+  members[i].used++; saveMembers(); renderTickets();
+  alert('✓ 1回使用。残り'+(members[i].tickets-members[i].used)+'回');
+}
+function buyTicket(i) {
+  members[i].tickets+=5; saveMembers(); renderTickets();
+  alert('✓ 5回追加（12,500円）。残り'+(members[i].tickets-members[i].used)+'回');
+}
+
+// ============================================================
+// 連絡
+// ============================================================
+function selLesson(btn, type) {
+  document.querySelectorAll('.lbtn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  announceTarget = type;
+  const bCnt = allApplications.filter(a=>a.cls==='beginner').length;
+  const iCnt = allApplications.filter(a=>a.cls==='intermediate').length;
+  const c = {
+    beginner: '初級クラス申し込み者（'+bCnt+'名）',
+    intermediate: '中級クラス申し込み者（'+iCnt+'名）',
+    all: '全申し込み者（'+allApplications.length+'名）'
+  };
+  document.getElementById('announce-count').textContent = c[type];
+}
+
+function tpl(t) {
+  const label = announceTarget==='beginner'?'初級クラス':announceTarget==='intermediate'?'中級クラス':'全員';
+  const beg = getNextThirdSunday();
+  const int_ = getNextFirstSunday();
+  const lessonDateStr = announceTarget==='beginner'
+    ? (beg?(beg.getMonth()+1)+'月'+beg.getDate()+'日（日）':'◯月◯日（日）')
+    : announceTarget==='intermediate'
+    ? (int_?(int_.getMonth()+1)+'月'+int_.getDate()+'日（日）':'◯月◯日（日）')
+    : '◯月◯日（日）';
+  const s = {
+    open:'【開催】'+lessonDateStr+' '+label+'の開催について',
+    cancel:'【中止】'+lessonDateStr+' '+label+'の中止について',
+    postpone:'【延期】'+lessonDateStr+' '+label+'の延期について',
+    detail:'【詳細】'+lessonDateStr+' '+label+'のご案内'
+  };
+  const b = {
+    open:'本日のレッスンは予定通り開催いたします。\n12:00に集合場所にお越しください。\n動きやすい服装・スニーカー・飲み物・タオルをお忘れなく。\nご参加お待ちしております！\n\n小笠原亮',
+    cancel:'誠に残念ですが、本日のレッスンは雨天のため中止といたします。\n次回の開催日程はあらためてご連絡いたします。\nご理解のほどよろしくお願いいたします。\n\n小笠原亮',
+    postpone:'本日のレッスンは天候の影響により延期となりました。\n代替日程については追ってご連絡いたします。\nご迷惑をおかけして申し訳ございません。\n\n小笠原亮',
+    detail:'下記詳細をお送りいたします。\n\n日時：'+lessonDateStr+'\n時間：12:00〜14:00\n集合場所：東京臨海広域防災公園\nhttps://maps.app.goo.gl/RjaMab77WBJaJxqPA\n\n参加費：3,000円\n※回数券制度あり → 5回セットで12,500円（1回500円お得）\n支払い方法：当日現金 or PayPay\n\n持ち物：\n・動きやすい服装\n・スニーカー\n・飲み物\n・タオル\n・プロテクターがある方は持参\n\n公共の場所を使用するため、周囲の方へのご配慮をお願いします。\n雨天の場合は、前日または当日朝に開催可否をご連絡します。\n\nご不明な点はお気軽にご連絡ください。\n小笠原亮'
+  };
+  document.getElementById('ann-subject').value = s[t];
+  document.getElementById('ann-body').value = b[t];
+}
+
+function sendAnn() {
+  const body = document.getElementById('ann-body').value.trim();
+  const subject = document.getElementById('ann-subject').value.trim();
+  if (!body) { alert('メッセージを入力してください'); return; }
+  const target = allApplications.filter(a =>
+    announceTarget==='all' || a.cls===announceTarget
+  );
+  const emails = target.map(a=>a.email).filter(Boolean).join(',');
+  if (!emails) { alert('送信対象のメールアドレスがありません'); return; }
+  // GmailのBCC一斉送信用リンクを生成
+  const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&bcc=${encodeURIComponent(emails)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  if (confirm('Gmailで一斉送信画面を開きます。\n対象：'+document.getElementById('announce-count').textContent+'\n\nよろしいですか？')) {
+    window.open(gmailUrl, '_blank');
+  }
+}
+
+// ============================================================
+// アンケート
+// ============================================================
+function filterSurvey(f, btn) {
+  currentSurveyFilter = f;
+  document.querySelectorAll('#tab-survey .ftab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  openSurveyId = null;
+  renderSurveys();
+}
+
+function renderSurveys() {
+  const list = allSurveys.filter(s => currentSurveyFilter==='all' || s.cls===currentSurveyFilter);
+  if (list.length === 0) {
+    document.getElementById('survey-list').innerHTML = '<div style="color:#888780;text-align:center;padding:1rem;font-size:13px">回答がありません</div>';
+    return;
+  }
+
+  document.getElementById('survey-list').innerHTML = list.map(s => {
+    const r = s.raw;
+    const isBeg = s.cls === 'beginner';
+
+    // スケール項目
+    const timeScore  = parseInt(r['2時間の講習時間はどう感じましたか？']) || 0;
+    const priceScore = parseInt(r['3,000円の料金設定はどう感じましたか？']) || 0;
+    const timeLabel  = ['','短い','やや短い','ちょうどよい','やや長い','長い'][timeScore] || '—';
+    const priceLabel = ['','安い','やや安い','適正','やや高い','高い'][priceScore] || '—';
+    const timePct    = timeScore  ? ((timeScore-1)/4)*100 : 0;
+    const pricePct   = priceScore ? ((priceScore-1)/4)*100 : 0;
+
+    // 初級専用スケール
+    const easyScore  = parseInt(r['説明はわかりやすかったですか？']) || 0;
+    const recScore   = parseInt(r['この講習会を友人に勧めたいですか？']) || 0;
+    const nextScore  = parseInt(r['次回もまた参加したいですか？']) || 0;
+    const easyLabel  = ['','わかりにくい','','普通','','わかりやすい'][easyScore] || '—';
+    const recLabel   = ['','勧めない','','どちらでも','','勧めたい'][recScore] || '—';
+    const nextLabel  = ['','参加しない','','わからない','','参加したい'][nextScore] || '—';
+
+    // 記述式（共通）
+    const issue    = r['レッスン参加前に解決したかったご自身の課題はなんでしたか？またその課題は解決しましたか？'] || '';
+    const discovery= r['レッスンで始めて知ったことや驚きだったことがあれば教えてください。'] || '';
+    const nextGoal = r['このレッスンを通してさらに知りたいことや解決したいことができた場合は教えてください。'] || '';
+    // 初級専用記述
+    const hard     = r['今回、特に難しかったことは何ですか？'] || '';
+
+    return `<div class="survey-row" style="cursor:default">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <span style="font-size:14px;font-weight:500">${s.name}</span>
+        <span class="badge ${clsB[s.cls]}">${clsL[s.cls]}</span>
+        <span style="font-size:11px;color:#888780;margin-left:auto">${(s.date||'').split(' ')[0]||''}</span>
+      </div>
+
+      <!-- スケール項目 -->
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:10px">
+        ${isBeg ? `
+        <div class="scale-bar">
+          <span style="font-size:11px;color:#888780;width:52px">わかりやすさ</span>
+          <div class="scale-bg"><div class="scale-fill" style="width:${((easyScore-1)/4)*100}%"></div></div>
+          <span style="font-size:11px;color:#888780;width:64px;text-align:right">${easyLabel}</span>
+        </div>` : ''}
+        <div class="scale-bar">
+          <span style="font-size:11px;color:#888780;width:52px">時間</span>
+          <div class="scale-bg"><div class="scale-fill" style="width:${timePct}%"></div></div>
+          <span style="font-size:11px;color:#888780;width:64px;text-align:right">${timeLabel}</span>
+        </div>
+        <div class="scale-bar">
+          <span style="font-size:11px;color:#888780;width:52px">料金</span>
+          <div class="scale-bg"><div class="scale-fill" style="width:${pricePct}%"></div></div>
+          <span style="font-size:11px;color:#888780;width:64px;text-align:right">${priceLabel}</span>
+        </div>
+        ${isBeg ? `
+        <div class="scale-bar">
+          <span style="font-size:11px;color:#888780;width:52px">また参加</span>
+          <div class="scale-bg"><div class="scale-fill" style="width:${((nextScore-1)/4)*100}%"></div></div>
+          <span style="font-size:11px;color:#888780;width:64px;text-align:right">${nextLabel}</span>
+        </div>
+        <div class="scale-bar">
+          <span style="font-size:11px;color:#888780;width:52px">友人に勧める</span>
+          <div class="scale-bg"><div class="scale-fill" style="width:${((recScore-1)/4)*100}%"></div></div>
+          <span style="font-size:11px;color:#888780;width:64px;text-align:right">${recLabel}</span>
+        </div>` : ''}
+      </div>
+
+      <!-- 記述式：常に表示 -->
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${issue ? `<div>
+          <div style="font-size:11px;color:#888780;margin-bottom:2px">解決したかった課題・結果</div>
+          <div style="font-size:13px;background:#f5f4f0;border-radius:6px;padding:8px">${issue}</div>
+        </div>` : ''}
+        ${isBeg && hard ? `<div>
+          <div style="font-size:11px;color:#888780;margin-bottom:2px">特に難しかったこと</div>
+          <div style="font-size:13px;background:#f5f4f0;border-radius:6px;padding:8px">${hard}</div>
+        </div>` : ''}
+        ${discovery ? `<div>
+          <div style="font-size:11px;color:#888780;margin-bottom:2px">新しい発見・驚き</div>
+          <div style="font-size:13px;background:#f5f4f0;border-radius:6px;padding:8px">${discovery}</div>
+        </div>` : ''}
+        ${nextGoal ? `<div>
+          <div style="font-size:11px;color:#888780;margin-bottom:2px">次に知りたいこと・解決したいこと</div>
+          <div style="font-size:13px;background:#f5f4f0;border-radius:6px;padding:8px">${nextGoal}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleSurvey(id) {
+  openSurveyId = (openSurveyId === id) ? null : id;
+  renderSurveys();
+}
+
+// ============================================================
+// タブ切り替え
+// ============================================================
+function goTab(name) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const idx = {dashboard:0,apply:1,members:2,payment:3,announce:4,survey:5};
+  document.querySelectorAll('.nav button')[idx[name]].classList.add('active');
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+renderMembers();
+renderTickets();
+loadAll();
+</script>
+</body>
+</html>
