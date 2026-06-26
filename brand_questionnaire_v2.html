@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デッキスペック情報収集シート</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --border: #E2E0D8;
+    --text-primary: #1C1C1A;
+    --text-secondary: #6B6960;
+    --text-tertiary: #A8A59C;
+    --accent: #2D5A3D;
+    --accent-light: #EAF2EC;
+    --tag-bg: #EDECE8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
+
+  .page-header { background: var(--accent); color: #fff; padding: 2.5rem 2rem 2rem; }
+  .page-header h1 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .page-header p { font-size: 13px; opacity: 0.85; max-width: 560px; line-height: 1.7; }
+  .logic-box { margin-top: 16px; background: rgba(255,255,255,0.12); border-radius: 10px; padding: 12px 16px; font-size: 12px; opacity: 0.9; line-height: 1.8; }
+  .logic-box strong { font-weight: 700; }
+
+  .container { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; display: flex; flex-direction: column; gap: 28px; }
+
+  .axis-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .axis-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .axis-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .axis-why { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .card-section-title { padding: 10px 20px; background: var(--tag-bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
+
+  .q-row { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 14px; }
+  .q-row:last-child { border-bottom: none; }
+  .q-id { font-size: 11px; font-weight: 600; color: var(--text-tertiary); min-width: 32px; padding-top: 2px; }
+  .q-body { flex: 1; }
+  .q-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .q-why { font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px; font-style: italic; }
+  .q-type { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .t-select { background: #E6F1FB; color: #0C447C; }
+  .t-scale  { background: #EAF2EC; color: #1A5E32; }
+  .t-text   { background: #FAEEDA; color: #633806; }
+  .t-multi  { background: #EEEDFE; color: #3C3489; }
+
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .opt { font-size: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); background: var(--bg); }
+
+  .scale-wrap { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .scale-end { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+  .scale-dots { display: flex; gap: 5px; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); font-size: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); }
+
+  textarea { width: 100%; min-height: 56px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-top: 8px; padding: 8px 12px; font-size: 12px; color: var(--text-tertiary); font-family: inherit; resize: vertical; }
+
+  .meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; }
+  .meta-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--text-secondary); letter-spacing: 0.05em; text-transform: uppercase; }
+
+  .note { background: #FFF8EC; border: 1px solid #E8C9A0; border-radius: 10px; padding: 12px 16px; font-size: 12px; color: #7A4A10; line-height: 1.8; }
+
+  @media (max-width: 600px) {
+    .container { padding: 1.25rem 1rem 3rem; }
+    .q-row { padding: 12px 14px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>デッキスペック情報収集シート</h1>
+</div>
+
+<div class="container">
+
+  <!-- 板の基本情報 -->
+  <div>
+    <div class="meta-title" style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;">はじめに：板の基本情報</div>
+    <div class="meta-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">ブランド名</div>
+          <textarea style="min-height:36px;" placeholder="例：COSMO Longboard"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">モデル名・サイズ</div>
+          <textarea style="min-height:36px;" placeholder="例：46インチ（フレックス：硬め）"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">回答者名</div>
+          <textarea style="min-height:36px;" placeholder="ニックネームでOK"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">この板の使用経験</div>
+          <textarea style="min-height:36px;" placeholder="例：2年間メイン使用 / 数回試乗"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸A：スタイル・目的 -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">A</div>
+      <div>
+        <div class="axis-title">スタイル・目的への適性</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">この板は何に向いているか</div>
+
+      <div class="q-row">
+        <div class="q-id">A-1</div>
+        <div class="q-body">
+          <div class="q-text">ステップのしやすさ（足運びのしやすさやデッキの広さなど）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">物足りない</span>
+            <div class="scale-dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
+            <span class="scale-end">最高に楽しい</span>
+          </div>
+          <textarea placeholder="補足：反発感・安定感・重さとの関係など言葉で（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-2</div>
+        <div class="q-body">
+          <div class="q-text">トリックのしやすさ（弾きやすさや耐久性など）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">難しい</span>
+            <div class="scale-dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
+            <span class="scale-end">やりやすい</span>
+          </div>
+          <textarea placeholder="補足：テールの弾き感・キック角度・重さとの関係など（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-3</div>
+        <div class="q-body">
+          <div class="q-text">カービングのしやすさ（高速走行での安定性やカービングのかけやすさ）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">難しい</span>
+            <div class="scale-dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
+            <span class="scale-end">やりやすい</span>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-4</div>
+        <div class="q-body">
+          <div class="q-text">クルージングのしやすさ（長距離・街乗り・スピード）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">向かない</span>
+            <div class="scale-dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
+            <span class="scale-end">とても向く</span>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-5</div>
+        <div class="q-body">
+          <div class="q-text">上記A-1〜A-4を踏まえて、この板のベストな使い方を1つ選ぶなら？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">ステップ・ダンシング特化</div>
+            <div class="opt">トリック特化</div>
+            <div class="opt">カービング特化</div>
+            <div class="opt">ダンシング＋トリック両立</div>
+            <div class="opt">オールラウンド</div>
+            <div class="opt">クルージング寄り</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 軸B：体格・体重 -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">B</div>
+      <div>
+        <div class="axis-title">体格・体重との相性</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">誰が乗ると板の良さが出るか</div>
+
+      <div class="q-row">
+        <div class="q-id">B-1</div>
+        <div class="q-body">
+          <div class="q-text">この板の良さが最もよく出る体重帯は？（複数可）</div>
+          <div class="q-type t-multi">複数選択</div>
+          <div class="opts">
+            <div class="opt">〜50kg（子供・軽量）</div>
+            <div class="opt">50〜65kg</div>
+            <div class="opt">65〜80kg</div>
+            <div class="opt">80kg〜</div>
+            <div class="opt">体重を問わない</div>
+          </div>
+          <textarea placeholder="補足：体重が重いほど板の反発感が出る、など（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">B-2</div>
+        <div class="q-body">
+          <div class="q-text">子供・小柄な人（〜50kg）にすすめられますか？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">◎ 積極的におすすめ</div>
+            <div class="opt">○ 問題なくすすめられる</div>
+            <div class="opt">△ あまり向かない</div>
+            <div class="opt">✕ 向かない</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 軸C：経験レベル -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">C</div>
+      <div>
+        <div class="axis-title">経験レベルへの適性</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">どのレベルの人に向いているか</div>
+
+      <div class="q-row">
+        <div class="q-id">C-1</div>
+        <div class="q-body">
+          <div class="q-text">完全な初心者（ロングボード未経験）にすすめられますか？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">◎ 最初の1枚として最適</div>
+            <div class="opt">○ 初心者でも問題ない</div>
+            <div class="opt">△ 初心者にはやや難しい</div>
+            <div class="opt">✕ 初心者には向かない</div>
+          </div>
+          <textarea placeholder="理由を一言（例：形状が統一されていて選びやすい／重すぎて扱いにくい など）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">C-2</div>
+        <div class="q-body">
+          <div class="q-text">この板が最も輝く（板の良さが出る）経験レベルは？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">初心者から</div>
+            <div class="opt">半年以上の経験者から</div>
+            <div class="opt">1〜2年以上の経験者から</div>
+            <div class="opt">中上級者向け</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">C-3</div>
+        <div class="q-body">
+          <div class="q-text">この板で上達しやすいと思いますか？（初心者目線で）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">上達しにくい</span>
+            <div class="scale-dots"><div class="dot">1</div><div class="dot">2</div><div class="dot">3</div><div class="dot">4</div><div class="dot">5</div></div>
+            <span class="scale-end">上達しやすい</span>
+          </div>
+          <textarea placeholder="理由（例：硬くて安定するので進ませる感覚がつかみやすい など）"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 軸D：競技 vs 楽しむ -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">D</div>
+      <div>
+        <div class="axis-title">競技志向 vs 楽しむ志向</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">どちらの志向に向いているか</div>
+
+      <div class="q-row">
+        <div class="q-id">D-1</div>
+        <div class="q-body">
+          <div class="q-text">この板の適性を選ぶなら？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">競技・大会向け</div>
+            <div class="opt">どちらかというと競技寄り</div>
+            <div class="opt">どちらともいえない</div>
+            <div class="opt">どちらかというと楽しむ寄り</div>
+            <div class="opt">楽しむ・スタイル・文化重視向け</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 軸E：予算・入手性 -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">E</div>
+      <div>
+        <div class="axis-title">予算・入手性</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">実際に買えるかどうか</div>
+
+      <div class="q-row">
+        <div class="q-id">E-1</div>
+        <div class="q-body">
+          <div class="q-text">日本での価格帯（デッキ単体）</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">〜¥20,000</div>
+            <div class="opt">¥20,000〜35,000</div>
+            <div class="opt">¥35,000〜50,000</div>
+            <div class="opt">¥50,000〜</div>
+          </div>
+          <textarea placeholder="具体的な価格があれば記入（例：Nicemakeで¥28,000）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">E-2</div>
+        <div class="q-body">
+          <div class="q-text">日本での入手のしやすさ</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">◎ 国内取扱店あり・すぐ買える</div>
+            <div class="opt">○ 公式サイトから直接購入できる</div>
+            <div class="opt">△ 代行・転送が必要</div>
+            <div class="opt">✕ 入手困難・在庫次第</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">E-3</div>
+        <div class="q-body">
+          <div class="q-text">Nicemakeでの取り扱い状況</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts">
+            <div class="opt">常時在庫あり</div>
+            <div class="opt">時々在庫あり</div>
+            <div class="opt">取り扱いなし</div>
+            <div class="opt">不明</div>
+          </div>
+          <textarea placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 補足（任意） -->
+  <div>
+    <div class="card">
+      <div class="card-section-title">補足（任意）</div>
+      <div class="q-row">
+        <div class="q-id">F-1</div>
+        <div class="q-body">
+          <div class="q-text">この板を買った人がよく言う「買ってよかった理由」</div>
+          <div class="q-type t-text">自由記述</div>
+          <textarea placeholder="例：長く使えた、仲間に勧めやすい、飽きない など"></textarea>
+        </div>
+      </div>
+      <div class="q-row">
+        <div class="q-id">F-2</div>
+        <div class="q-body">
+          <div class="q-text">この板を買った人がよく後悔する・気をつけるべき点</div>
+          <div class="q-type t-text">自由記述</div>
+          <textarea placeholder="例：スキプレのサイズ注意、試し乗り推奨、重さが想定外 など"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+</div>
+</body>
+</html>
