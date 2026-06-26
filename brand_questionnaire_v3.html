@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>デッキスペック情報収集シート</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --border: #E2E0D8;
+    --text-primary: #1C1C1A;
+    --text-secondary: #6B6960;
+    --text-tertiary: #A8A59C;
+    --accent: #2D5A3D;
+    --accent-light: #EAF2EC;
+    --tag-bg: #EDECE8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text-primary); font-size: 14px; line-height: 1.6; }
+  .page-header { background: var(--accent); color: #fff; padding: 2.5rem 2rem 2rem; }
+  .page-header h1 { font-size: 20px; font-weight: 700; }
+  .container { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; display: flex; flex-direction: column; gap: 28px; }
+  .axis-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .axis-num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .axis-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+  .card-section-title { padding: 10px 20px; background: var(--tag-bg); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); }
+  .q-row { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; gap: 14px; }
+  .q-row:last-child { border-bottom: none; }
+  .q-id { font-size: 11px; font-weight: 600; color: var(--text-tertiary); min-width: 32px; padding-top: 2px; }
+  .q-body { flex: 1; }
+  .q-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .q-type { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 4px; letter-spacing: 0.04em; margin-bottom: 8px; }
+  .t-select { background: #E6F1FB; color: #0C447C; }
+  .t-scale  { background: #EAF2EC; color: #1A5E32; }
+  .t-text   { background: #FAEEDA; color: #633806; }
+  .t-multi  { background: #EEEDFE; color: #3C3489; }
+  .opts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .opt { font-size: 12px; padding: 4px 12px; border: 1px solid var(--border); border-radius: 20px; color: var(--text-secondary); background: var(--bg); cursor: pointer; user-select: none; transition: all 0.15s; }
+  .opt.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .scale-wrap { display: flex; align-items: center; gap: 10px; margin-top: 6px; }
+  .scale-end { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+  .scale-dots { display: flex; gap: 5px; }
+  .dot { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg); font-size: 11px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); cursor: pointer; transition: all 0.15s; }
+  .dot.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+  textarea { width: 100%; min-height: 56px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); margin-top: 8px; padding: 8px 12px; font-size: 12px; color: var(--text-primary); font-family: inherit; resize: vertical; }
+  .meta-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 1.25rem 1.5rem; }
+  .submit-area { text-align: center; padding: 1rem 0; }
+  .submit-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px 48px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
+  .submit-btn:hover { opacity: 0.85; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .msg { margin-top: 14px; font-size: 13px; font-weight: 500; text-align: center; }
+  .msg.success { color: var(--accent); }
+  .msg.error { color: #A32D2D; }
+  @media (max-width: 600px) {
+    .container { padding: 1.25rem 1rem 3rem; }
+    .q-row { padding: 12px 14px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>デッキスペック情報収集シート</h1>
+</div>
+
+<div class="container">
+
+  <!-- 板の基本情報 -->
+  <div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-tertiary);margin-bottom:8px;">はじめに：板の基本情報</div>
+    <div class="meta-card">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">ブランド名</div>
+          <textarea id="brand" style="min-height:36px;" placeholder="例：COSMO Longboard"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">モデル名・サイズ</div>
+          <textarea id="model" style="min-height:36px;" placeholder="例：46インチ（フレックス：硬め）"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">回答者名</div>
+          <textarea id="name" style="min-height:36px;" placeholder="ニックネームでOK"></textarea>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px;">この板の使用経験</div>
+          <textarea id="experience" style="min-height:36px;" placeholder="例：2年間メイン使用 / 数回試乗"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸A -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">A</div>
+      <div><div class="axis-title">スタイル・目的への適性</div></div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">この板は何に向いているか</div>
+
+      <div class="q-row">
+        <div class="q-id">A-1</div>
+        <div class="q-body">
+          <div class="q-text">ステップのしやすさ（足運びのしやすさやデッキの広さなど）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">物足りない</span>
+            <div class="scale-dots" data-key="a1">
+              <div class="dot" data-val="1">1</div><div class="dot" data-val="2">2</div><div class="dot" data-val="3">3</div><div class="dot" data-val="4">4</div><div class="dot" data-val="5">5</div>
+            </div>
+            <span class="scale-end">最高に楽しい</span>
+          </div>
+          <textarea id="a1note" placeholder="補足：反発感・安定感・重さとの関係など（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-2</div>
+        <div class="q-body">
+          <div class="q-text">トリックのしやすさ（弾きやすさや耐久性など）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">難しい</span>
+            <div class="scale-dots" data-key="a2">
+              <div class="dot" data-val="1">1</div><div class="dot" data-val="2">2</div><div class="dot" data-val="3">3</div><div class="dot" data-val="4">4</div><div class="dot" data-val="5">5</div>
+            </div>
+            <span class="scale-end">やりやすい</span>
+          </div>
+          <textarea id="a2note" placeholder="補足：テールの弾き感・キック角度など（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-3</div>
+        <div class="q-body">
+          <div class="q-text">カービングのしやすさ（高速走行での安定性やカービングのかけやすさ）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">難しい</span>
+            <div class="scale-dots" data-key="a3">
+              <div class="dot" data-val="1">1</div><div class="dot" data-val="2">2</div><div class="dot" data-val="3">3</div><div class="dot" data-val="4">4</div><div class="dot" data-val="5">5</div>
+            </div>
+            <span class="scale-end">やりやすい</span>
+          </div>
+          <textarea id="a3note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-4</div>
+        <div class="q-body">
+          <div class="q-text">クルージングのしやすさ（長距離・街乗り・スピード）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">向かない</span>
+            <div class="scale-dots" data-key="a4">
+              <div class="dot" data-val="1">1</div><div class="dot" data-val="2">2</div><div class="dot" data-val="3">3</div><div class="dot" data-val="4">4</div><div class="dot" data-val="5">5</div>
+            </div>
+            <span class="scale-end">とても向く</span>
+          </div>
+          <textarea id="a4note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">A-5</div>
+        <div class="q-body">
+          <div class="q-text">上記A-1〜A-4を踏まえて、この板のベストな使い方を1つ選ぶなら？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="a5" data-multi="false">
+            <div class="opt" data-val="ステップ・ダンシング特化">ステップ・ダンシング特化</div>
+            <div class="opt" data-val="トリック特化">トリック特化</div>
+            <div class="opt" data-val="カービング特化">カービング特化</div>
+            <div class="opt" data-val="ダンシング＋トリック両立">ダンシング＋トリック両立</div>
+            <div class="opt" data-val="オールラウンド">オールラウンド</div>
+            <div class="opt" data-val="クルージング寄り">クルージング寄り</div>
+          </div>
+          <textarea id="a5note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸B -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">B</div>
+      <div><div class="axis-title">体格・体重との相性</div></div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">誰が乗ると板の良さが出るか</div>
+
+      <div class="q-row">
+        <div class="q-id">B-1</div>
+        <div class="q-body">
+          <div class="q-text">この板の良さが最もよく出る体重帯は？（複数可）</div>
+          <div class="q-type t-multi">複数選択</div>
+          <div class="opts" data-key="b1" data-multi="true">
+            <div class="opt" data-val="〜50kg">〜50kg（子供・軽量）</div>
+            <div class="opt" data-val="50〜65kg">50〜65kg</div>
+            <div class="opt" data-val="65〜80kg">65〜80kg</div>
+            <div class="opt" data-val="80kg〜">80kg〜</div>
+            <div class="opt" data-val="体重を問わない">体重を問わない</div>
+          </div>
+          <textarea id="b1note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">B-2</div>
+        <div class="q-body">
+          <div class="q-text">子供・小柄な人（〜50kg）にすすめられますか？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="b2" data-multi="false">
+            <div class="opt" data-val="◎">◎ 積極的におすすめ</div>
+            <div class="opt" data-val="○">○ 問題なくすすめられる</div>
+            <div class="opt" data-val="△">△ あまり向かない</div>
+            <div class="opt" data-val="✕">✕ 向かない</div>
+          </div>
+          <textarea id="b2note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸C -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">C</div>
+      <div><div class="axis-title">経験レベルへの適性</div></div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">どのレベルの人に向いているか</div>
+
+      <div class="q-row">
+        <div class="q-id">C-1</div>
+        <div class="q-body">
+          <div class="q-text">完全な初心者（ロングボード未経験）にすすめられますか？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="c1" data-multi="false">
+            <div class="opt" data-val="◎最初の1枚">◎ 最初の1枚として最適</div>
+            <div class="opt" data-val="○初心者OK">○ 初心者でも問題ない</div>
+            <div class="opt" data-val="△やや難しい">△ 初心者にはやや難しい</div>
+            <div class="opt" data-val="✕向かない">✕ 初心者には向かない</div>
+          </div>
+          <textarea id="c1note" placeholder="理由を一言（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">C-2</div>
+        <div class="q-body">
+          <div class="q-text">この板が最も輝く（板の良さが出る）経験レベルは？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="c2" data-multi="false">
+            <div class="opt" data-val="初心者から">初心者から</div>
+            <div class="opt" data-val="半年以上">半年以上の経験者から</div>
+            <div class="opt" data-val="1〜2年以上">1〜2年以上の経験者から</div>
+            <div class="opt" data-val="中上級者向け">中上級者向け</div>
+          </div>
+          <textarea id="c2note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">C-3</div>
+        <div class="q-body">
+          <div class="q-text">この板で上達しやすいと思いますか？（初心者目線で）</div>
+          <div class="q-type t-scale">5段階</div>
+          <div class="scale-wrap">
+            <span class="scale-end">上達しにくい</span>
+            <div class="scale-dots" data-key="c3">
+              <div class="dot" data-val="1">1</div><div class="dot" data-val="2">2</div><div class="dot" data-val="3">3</div><div class="dot" data-val="4">4</div><div class="dot" data-val="5">5</div>
+            </div>
+            <span class="scale-end">上達しやすい</span>
+          </div>
+          <textarea id="c3note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸D -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">D</div>
+      <div><div class="axis-title">競技志向 vs 楽しむ志向</div></div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">どちらの志向に向いているか</div>
+      <div class="q-row">
+        <div class="q-id">D-1</div>
+        <div class="q-body">
+          <div class="q-text">この板の適性を選ぶなら？</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="d1" data-multi="false">
+            <div class="opt" data-val="競技・大会向け">競技・大会向け</div>
+            <div class="opt" data-val="どちらかというと競技寄り">どちらかというと競技寄り</div>
+            <div class="opt" data-val="どちらともいえない">どちらともいえない</div>
+            <div class="opt" data-val="どちらかというと楽しむ寄り">どちらかというと楽しむ寄り</div>
+            <div class="opt" data-val="楽しむ・スタイル・文化重視向け">楽しむ・スタイル・文化重視向け</div>
+          </div>
+          <textarea id="d1note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 軸E -->
+  <div>
+    <div class="axis-header">
+      <div class="axis-num">E</div>
+      <div><div class="axis-title">予算・入手性</div></div>
+    </div>
+    <div class="card">
+      <div class="card-section-title">実際に買えるかどうか</div>
+
+      <div class="q-row">
+        <div class="q-id">E-1</div>
+        <div class="q-body">
+          <div class="q-text">日本での価格帯（デッキ単体）</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="e1" data-multi="false">
+            <div class="opt" data-val="〜¥20,000">〜¥20,000</div>
+            <div class="opt" data-val="¥20,000〜35,000">¥20,000〜35,000</div>
+            <div class="opt" data-val="¥35,000〜50,000">¥35,000〜50,000</div>
+            <div class="opt" data-val="¥50,000〜">¥50,000〜</div>
+          </div>
+          <textarea id="e1note" placeholder="具体的な価格があれば記入（例：Nicemakeで¥28,000）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">E-2</div>
+        <div class="q-body">
+          <div class="q-text">日本での入手のしやすさ</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="e2" data-multi="false">
+            <div class="opt" data-val="◎国内取扱店">◎ 国内取扱店あり・すぐ買える</div>
+            <div class="opt" data-val="○公式直販">○ 公式サイトから直接購入できる</div>
+            <div class="opt" data-val="△代行必要">△ 代行・転送が必要</div>
+            <div class="opt" data-val="✕入手困難">✕ 入手困難・在庫次第</div>
+          </div>
+          <textarea id="e2note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+
+      <div class="q-row">
+        <div class="q-id">E-3</div>
+        <div class="q-body">
+          <div class="q-text">Nicemakeでの取り扱い状況</div>
+          <div class="q-type t-select">単一選択</div>
+          <div class="opts" data-key="e3" data-multi="false">
+            <div class="opt" data-val="常時在庫あり">常時在庫あり</div>
+            <div class="opt" data-val="時々在庫あり">時々在庫あり</div>
+            <div class="opt" data-val="取り扱いなし">取り扱いなし</div>
+            <div class="opt" data-val="不明">不明</div>
+          </div>
+          <textarea id="e3note" placeholder="補足（任意）"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 補足 -->
+  <div>
+    <div class="card">
+      <div class="card-section-title">補足（任意）</div>
+      <div class="q-row">
+        <div class="q-id">F-1</div>
+        <div class="q-body">
+          <div class="q-text">この板を買った人がよく言う「買ってよかった理由」</div>
+          <div class="q-type t-text">自由記述</div>
+          <textarea id="f1" placeholder="例：長く使えた、仲間に勧めやすい、飽きない など"></textarea>
+        </div>
+      </div>
+      <div class="q-row">
+        <div class="q-id">F-2</div>
+        <div class="q-body">
+          <div class="q-text">この板を買った人がよく後悔する・気をつけるべき点</div>
+          <div class="q-type t-text">自由記述</div>
+          <textarea id="f2" placeholder="例：スキプレのサイズ注意、試し乗り推奨、重さが想定外 など"></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 送信 -->
+  <div class="submit-area">
+    <button class="submit-btn" id="submitBtn" onclick="submitForm()">回答を送信する</button>
+    <div class="msg" id="msg"></div>
+  </div>
+
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwWfm52etKSVgmqNH_rhiK9BfMa793IGNiUKYEEM9ZQc3fYOBZqMQAXSDUkVl6ocnTe/exec';
+const selections = {};
+
+// スケールドット
+document.querySelectorAll('.scale-dots').forEach(group => {
+  const key = group.dataset.key;
+  group.querySelectorAll('.dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      group.querySelectorAll('.dot').forEach(d => d.classList.remove('selected'));
+      dot.classList.add('selected');
+      selections[key] = dot.dataset.val;
+    });
+  });
+});
+
+// 選択肢ボタン
+document.querySelectorAll('.opts').forEach(group => {
+  const key = group.dataset.key;
+  const multi = group.dataset.multi === 'true';
+  group.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      if (multi) {
+        opt.classList.toggle('selected');
+        selections[key] = Array.from(group.querySelectorAll('.opt.selected')).map(o => o.dataset.val).join('、');
+      } else {
+        group.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selections[key] = opt.dataset.val;
+      }
+    });
+  });
+});
+
+function g(id) { return (document.getElementById(id) || {}).value || ''; }
+
+async function submitForm() {
+  const btn = document.getElementById('submitBtn');
+  const msg = document.getElementById('msg');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  msg.textContent = '';
+  msg.className = 'msg';
+
+  const data = {
+    brand: g('brand'), model: g('model'), name: g('name'), experience: g('experience'),
+    a1: selections.a1 || '', a1note: g('a1note'),
+    a2: selections.a2 || '', a2note: g('a2note'),
+    a3: selections.a3 || '', a3note: g('a3note'),
+    a4: selections.a4 || '', a4note: g('a4note'),
+    a5: selections.a5 || '', a5note: g('a5note'),
+    b1: selections.b1 || '', b1note: g('b1note'),
+    b2: selections.b2 || '', b2note: g('b2note'),
+    c1: selections.c1 || '', c1note: g('c1note'),
+    c2: selections.c2 || '', c2note: g('c2note'),
+    c3: selections.c3 || '', c3note: g('c3note'),
+    d1: selections.d1 || '', d1note: g('d1note'),
+    e1: selections.e1 || '', e1note: g('e1note'),
+    e2: selections.e2 || '', e2note: g('e2note'),
+    e3: selections.e3 || '', e3note: g('e3note'),
+    f1: g('f1'), f2: g('f2')
+  };
+
+  try {
+    await fetch(GAS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    msg.textContent = '✓ 送信完了しました！ありがとうございます。';
+    msg.className = 'msg success';
+    btn.textContent = '送信完了';
+  } catch (err) {
+    msg.textContent = '送信に失敗しました。もう一度お試しください。';
+    msg.className = 'msg error';
+    btn.disabled = false;
+    btn.textContent = '回答を送信する';
+  }
+}
+</script>
+</body>
+</html>
