@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あなたに合う板を見つけよう</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #0E0E0E;
+    --surface: #1A1A1A;
+    --surface2: #242424;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --text: #F0EEE8;
+    --text-sub: #888680;
+    --accent: #C8F041;
+    --accent-dark: #9DBF1E;
+    --accent-bg: rgba(200,240,65,0.08);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 600px;
+    padding: 0 1.25rem 4rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    padding: 2.5rem 0 2rem;
+    text-align: center;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .header-title {
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin-top: 8px;
+    line-height: 1.7;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    margin-bottom: 2rem;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-sub);
+    margin-bottom: 8px;
+  }
+  .progress-bar-bg {
+    width: 100%;
+    height: 3px;
+    background: var(--surface2);
+    border-radius: 2px;
+  }
+  .progress-bar {
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  /* Question */
+  .question-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    margin-bottom: 1.25rem;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .question-axis {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .question-text {
+    font-size: 17px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+    margin-bottom: 1.25rem;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .option-btn {
+    background: var(--surface2);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--text);
+    font-family: inherit;
+    transition: all 0.15s;
+    line-height: 1.5;
+  }
+  .option-btn:hover {
+    border-color: var(--border-hover);
+    background: #2C2C2C;
+  }
+  .option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    color: var(--accent);
+  }
+
+  /* Nav buttons */
+  .nav {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  .btn-back {
+    background: transparent;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 20px;
+    font-size: 13px;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-back:hover { border-color: var(--border-hover); color: var(--text); }
+  .btn-next {
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    padding: 12px 28px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #0E0E0E;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-next:hover { background: var(--accent-dark); }
+  .btn-next:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 4rem 0;
+    text-align: center;
+  }
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Results */
+  .results-header {
+    text-align: center;
+    padding: 1.5rem 0 1.75rem;
+  }
+  .results-eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .results-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .results-sub {
+    font-size: 13px;
+    color: var(--text-sub);
+    line-height: 1.7;
+  }
+
+  .profile-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1.75rem;
+  }
+  .profile-tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 0.5px solid var(--accent);
+    color: var(--accent);
+    background: var(--accent-bg);
+  }
+
+  .result-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 12px;
+    animation: fadeIn 0.4s ease;
+  }
+  .result-card.rank1 {
+    border-color: var(--accent);
+    background: rgba(200,240,65,0.04);
+  }
+  .result-rank-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .rank-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--text-sub);
+  }
+  .rank-badge.gold { background: var(--accent); color: #0E0E0E; }
+  .result-brand { font-size: 11px; color: var(--text-sub); }
+  .result-model { font-size: 17px; font-weight: 600; color: var(--text); }
+  .score-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .score-bar-bg {
+    flex: 1;
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 2px;
+  }
+  .score-bar-fill {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--accent);
+    transition: width 0.6s ease;
+  }
+  .score-num {
+    font-size: 12px;
+    color: var(--text-sub);
+    min-width: 36px;
+    text-align: right;
+  }
+  .result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+  }
+  .result-tag {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    color: var(--text-sub);
+  }
+  .result-note {
+    font-size: 12px;
+    color: var(--text-sub);
+    line-height: 1.6;
+    border-top: 0.5px solid var(--border);
+    padding-top: 10px;
+    margin-top: 2px;
+  }
+  .beginner-badge {
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: rgba(200,240,65,0.15);
+    color: var(--accent);
+    font-weight: 500;
+  }
+  .supplement-section {
+    margin-top: 2rem;
+    border-top: 0.5px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  .supplement-title {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .supplement-card {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 8px;
+  }
+  .supplement-brand {
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 4px;
+  }
+  .supplement-cat {
+    font-size: 10px;
+    color: var(--text-sub);
+    margin-bottom: 6px;
+  }
+  .supplement-text {
+    font-size: 12px;
+    color: var(--text-sub);
+    line-height: 1.7;
+  }
+  .btn-retry {
+    display: block;
+    width: 100%;
+    margin-top: 2rem;
+    background: transparent;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    font-size: 14px;
+    color: var(--text-sub);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .btn-retry:hover { border-color: var(--border-hover); color: var(--text); }
+
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-eyebrow">Longboard Deck Finder</div>
+    <div class="header-title">あなたに合う板を<br>見つけよう</div>
+    <div class="header-sub">17の質問に答えるだけで、<br>あなたのスタイルにぴったりのデッキを提案します。</div>
+  </div>
+
+  <!-- Quiz Screen -->
+  <div id="quiz-screen">
+    <div class="progress-wrap">
+      <div class="progress-meta">
+        <span id="q-label">Q1 / 17</span>
+        <span id="q-axis"></span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar" id="progress-bar" style="width:6%"></div>
+      </div>
+    </div>
+
+    <div class="question-card">
+      <div class="question-axis" id="q-axis-label"></div>
+      <div class="question-text" id="q-text"></div>
+      <div class="options" id="options"></div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-back" id="btn-back" onclick="goBack()">戻る</button>
+      <button class="btn-next" id="btn-next" onclick="goNext()" disabled>次へ</button>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="hidden">
+    <div class="loading">
+      <div class="spinner"></div>
+      <div style="font-size:14px;color:var(--text-sub);">あなたに合う板を探しています...</div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div id="results-screen" class="hidden">
+    <div class="results-header">
+      <div class="results-eyebrow">あなたへのおすすめ</div>
+      <div class="results-title">診断結果</div>
+      <div class="results-sub" id="results-sub"></div>
+    </div>
+    <div class="profile-tags" id="profile-tags"></div>
+    <div id="results-list"></div>
+    <div class="supplement-section" id="supplement-section">
+      <div class="supplement-title">ライダーからの一言</div>
+      <div id="supplement-list"></div>
+    </div>
+    <button class="btn-retry" onclick="restart()">もう一度診断する</button>
+  </div>
+
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxyAK6IwHvLkL8x4xfVVN4anW9pYDVCrFEWhWHbXi07JXYJB1MYbGMG4Y-NDYKg-HUbtQ/exec';
+
+const questions = [
+  {
+    id:'q1', axis:'きっかけ',
+    text:'ロングボードを始めたいと思ったきっかけに近いのはどれ？',
+    options:[
+      {text:'かっこいい・おしゃれな動きを動画で見て憧れた', tags:['スタイル:トリック','スタイル:ダンシング']},
+      {text:'景色のいい場所や街中を気持ちよく走りたい', tags:['スタイル:クルージング']},
+      {text:'音楽に合わせて踊るように滑りたい', tags:['スタイル:ダンシング']},
+      {text:'友達に誘われた・なんとなく興味があった', tags:['経験:初心者','志向:楽しむ']},
+    ]
+  },
+  {
+    id:'q2', axis:'スタイル（最重要）',
+    text:'やってみたいのはどんな動き？',
+    options:[
+      {text:'足を交差させてステップを踏む（ダンシング）', tags:['スタイル:ダンシング']},
+      {text:'技を決めてトリックをやりたい', tags:['スタイル:トリック']},
+      {text:'大きくカーブを描いてカービング', tags:['スタイル:カービング']},
+      {text:'とにかく気持ちよく走りたい', tags:['スタイル:クルージング']},
+    ]
+  },
+  {
+    id:'q3', axis:'目標',
+    text:'目標は？',
+    options:[
+      {text:'大会や競技に出てみたい', tags:['志向:競技']},
+      {text:'仲間と楽しく滑れれば十分', tags:['志向:楽しむ']},
+      {text:'まずは乗れるようになりたい', tags:['志向:楽しむ','経験:初心者']},
+    ]
+  },
+  {
+    id:'q4', axis:'体格',
+    text:'身長を教えてください',
+    options:[
+      {text:'150cm以下', tags:['身長:〜150']},
+      {text:'150〜165cm', tags:['身長:150-165']},
+      {text:'165〜180cm', tags:['身長:165-180']},
+      {text:'180cm以上', tags:['身長:180+']},
+    ]
+  },
+  {
+    id:'q5', axis:'体格',
+    text:'体重を教えてください',
+    options:[
+      {text:'50kg以下', tags:['体重:〜50']},
+      {text:'50〜65kg', tags:['体重:50-65']},
+      {text:'65〜80kg', tags:['体重:65-80']},
+      {text:'80kg以上', tags:['体重:80+']},
+    ]
+  },
+  {
+    id:'q6', axis:'経験',
+    text:'ロングボードの経験は？',
+    options:[
+      {text:'全くない（初めて）', tags:['経験:初心者']},
+      {text:'数回乗ったことがある', tags:['経験:初心者']},
+      {text:'ある程度乗れる', tags:['経験:中級者']},
+      {text:'けっこう乗れる', tags:['経験:上級者']},
+    ]
+  },
+  {
+    id:'q7', axis:'予算',
+    text:'予算はどのくらい？',
+    options:[
+      {text:'2万円以内', tags:['予算:〜2万']},
+      {text:'2〜3.5万円', tags:['予算:2-3.5万']},
+      {text:'3.5〜5万円', tags:['予算:3.5-5万']},
+      {text:'5万円以上', tags:['予算:5万+']},
+    ]
+  },
+  {
+    id:'q8', axis:'デザイン',
+    text:'デザインの好みは？',
+    options:[
+      {text:'かわいい・ポップ', tags:['デザイン:かわいい']},
+      {text:'シンプル・スタイリッシュ', tags:['デザイン:シンプル']},
+      {text:'木目・ナチュラル', tags:['デザイン:木目']},
+      {text:'かっこいい・個性的', tags:['デザイン:かっこいい']},
+    ]
+  },
+  {
+    id:'q9', axis:'優先事項',
+    text:'板を選ぶとき一番気になるのは？',
+    options:[
+      {text:'トリックのしやすさ', tags:['スタイル:トリック']},
+      {text:'ステップ・ダンシングのしやすさ', tags:['スタイル:ダンシング']},
+      {text:'カービングのしやすさ', tags:['スタイル:カービング']},
+      {text:'乗り続けられる耐久性', tags:['フレックス:耐久重視']},
+    ]
+  },
+  {
+    id:'q10', axis:'一緒に滑る人',
+    text:'誰と滑ることが多そう？',
+    options:[
+      {text:'一人で', tags:[]},
+      {text:'友達と', tags:['志向:楽しむ']},
+      {text:'子供と一緒に', tags:['志向:楽しむ','体重:〜50']},
+      {text:'まだ友達いないけどこれから作りたい', tags:['志向:楽しむ','経験:初心者']},
+    ]
+  },
+  {
+    id:'q11', axis:'板の感覚',
+    text:'板に求めるのはどっち？',
+    options:[
+      {text:'軽くて扱いやすい', tags:['重さ:軽い']},
+      {text:'重くてどっしり安定感がある', tags:['重さ:重い']},
+      {text:'わからない', tags:[]},
+    ]
+  },
+  {
+    id:'q12', axis:'フレックス',
+    text:'しなり（フレックス）の好みは？',
+    options:[
+      {text:'柔らかくてしなる感じが好き', tags:['フレックス:ソフト']},
+      {text:'硬くてしっかりした感じが好き', tags:['フレックス:ハード']},
+      {text:'わからない', tags:[]},
+    ]
+  },
+  {
+    id:'q13', axis:'頻度',
+    text:'どのくらいのペースで乗りそう？',
+    options:[
+      {text:'毎日乗りたい', tags:['フレックス:耐久重視']},
+      {text:'週末メイン', tags:[]},
+      {text:'たまに乗る感じ', tags:[]},
+    ]
+  },
+  {
+    id:'q14', axis:'価値観',
+    text:'滑りで一番大事にしたいのは？',
+    options:[
+      {text:'スピード感・爽快感', tags:['スタイル:カービング','スタイル:クルージング']},
+      {text:'安定感・安心感', tags:['スタイル:ダンシング']},
+      {text:'表現・創造性', tags:['スタイル:ダンシング','スタイル:トリック']},
+      {text:'自由・気持ちよさ', tags:['スタイル:クルージング']},
+    ]
+  },
+  {
+    id:'q15', axis:'サイズ感',
+    text:'好きなデッキの長さのイメージは？',
+    options:[
+      {text:'短め（取り回しやすい）', tags:['サイズ:短め']},
+      {text:'長め（安定感がある）', tags:['サイズ:長め']},
+      {text:'わからない', tags:[]},
+    ]
+  },
+  {
+    id:'q16', axis:'将来の展望',
+    text:'将来的にトリックもやってみたい？',
+    options:[
+      {text:'はい、トリックもやりたい', tags:['スタイル:トリック']},
+      {text:'ダンシングやカービングに集中したい', tags:[]},
+      {text:'まだわからない', tags:[]},
+    ]
+  },
+  {
+    id:'q17', axis:'優先度',
+    text:'見た目とスペックどちらを重視？',
+    options:[
+      {text:'デザインで選びたい', tags:['優先:デザイン']},
+      {text:'スペック・乗り心地で選びたい', tags:['優先:スペック']},
+      {text:'両方同じくらい大事', tags:[]},
+    ]
+  },
+];
+
+let currentQ = 0;
+let answers = [];
+let boardsData = [];
+let supplementData = [];
+
+function renderQuestion() {
+  const q = questions[currentQ];
+  document.getElementById('q-label').textContent = `Q${currentQ+1} / ${questions.length}`;
+  document.getElementById('q-axis').textContent = q.axis;
+  document.getElementById('q-axis-label').textContent = q.axis;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-bar').style.width = `${((currentQ+1)/questions.length)*100}%`;
+  document.getElementById('btn-back').style.visibility = currentQ === 0 ? 'hidden' : 'visible';
+
+  const opts = document.getElementById('options');
+  opts.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.text;
+    if (answers[currentQ] === i) btn.classList.add('selected');
+    btn.onclick = () => selectOption(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('btn-next').disabled = answers[currentQ] === undefined;
+  const isLast = currentQ === questions.length - 1;
+  document.getElementById('btn-next').textContent = isLast ? '診断する' : '次へ';
+}
+
+function selectOption(i) {
+  answers[currentQ] = i;
+  document.querySelectorAll('.option-btn').forEach((btn, idx) => {
+    btn.classList.toggle('selected', idx === i);
+  });
+  document.getElementById('btn-next').disabled = false;
+}
+
+function goNext() {
+  if (answers[currentQ] === undefined) return;
+  if (currentQ < questions.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showLoading();
+  }
+}
+
+function goBack() {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+}
+
+function showLoading() {
+  document.getElementById('quiz-screen').classList.add('hidden');
+  document.getElementById('loading-screen').classList.remove('hidden');
+  fetchAndCalculate();
+}
+
+async function fetchAndCalculate() {
+  try {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      window.__gasCallback = (data) => {
+        boardsData = data.boards || [];
+        supplementData = data.supplement || [];
+        delete window.__gasCallback;
+        resolve();
+      };
+      script.src = GAS_URL + '?callback=__gasCallback';
+      script.onerror = () => { delete window.__gasCallback; reject(); };
+      document.head.appendChild(script);
+      setTimeout(() => {
+        if (window.__gasCallback) {
+          delete window.__gasCallback;
+          reject();
+        }
+      }, 8000);
+    });
+  } catch(e) {
+    // GAS直接fetch試行
+    try {
+      const res = await fetch(GAS_URL);
+      const data = await res.json();
+      boardsData = data.boards || [];
+      supplementData = data.supplement || [];
+    } catch(e2) {
+      boardsData = [];
+      supplementData = [];
+    }
+  }
+  setTimeout(() => showResults(), 500);
+}
+
+function buildUserProfile() {
+  const tags = new Set();
+  answers.forEach((ansIdx, qIdx) => {
+    const q = questions[qIdx];
+    q.options[ansIdx].tags.forEach(t => tags.add(t));
+  });
+  return tags;
+}
+
+function getBudgetLevel(tags) {
+  if (tags.has('予算:〜2万')) return 0;
+  if (tags.has('予算:2-3.5万')) return 1;
+  if (tags.has('予算:3.5-5万')) return 2;
+  if (tags.has('予算:5万+')) return 3;
+  return 3;
+}
+
+function boardBudgetLevel(b) {
+  const p = b["予算帯"] || "";
+  if (p.includes("〜2万")) return 0;
+  if (p.includes("2-3.5万")) return 1;
+  if (p.includes("3.5-5万")) return 2;
+  if (p.includes("5万")) return 3;
+  return 3;
+}
+
+function scoreBoard(board, userTags, budgetLevel, isDesignPriority) {
+  let score = 0;
+  const boardStyle = (board['スタイルタグ'] || '').split(',');
+  const boardGoal = board['志向タグ'] || '';
+  const boardBody = (board['体格タグ'] || '').split(',');
+  const boardFlex = board['フレックスタグ'] || '';
+  const boardDesign = (board['デザインタグ'] || '').split(',');
+  const boardLevel = board['初心者適性'] || '';
+
+  // 予算フィルター（超過は大きく減点）
+  if (boardBudgetLevel(board) > budgetLevel) {
+    score -= 60;
+  }
+
+  // スタイルタグ照合（最重要 40点）
+  const styleMap = {
+    'スタイル:ダンシング': ['ステップ・ダンシング','ダンシング＋トリック'],
+    'スタイル:トリック': ['トリック','ダンシング＋トリック'],
+    'スタイル:カービング': ['カービング'],
+    'スタイル:クルージング': ['クルージング'],
+  };
+  let styleMatch = false;
+  userTags.forEach(tag => {
+    if (styleMap[tag]) {
+      styleMap[tag].forEach(s => {
+        if (boardStyle.some(bs => bs.trim() === s)) styleMatch = true;
+      });
+    }
+  });
+  if (styleMatch) score += 40;
+
+  // 志向タグ照合（25点）
+  if (userTags.has('志向:競技') && boardGoal.includes('競技')) score += 25;
+  if (userTags.has('志向:楽しむ') && boardGoal.includes('楽しむ')) score += 25;
+
+  // 体格タグ照合（20点）
+  const bodyMap = {
+    '体重:〜50': '体重〜50kg', '体重:50-65': '体重50-65',
+    '体重:65-80': '体重65-80', '体重:80+': '体重80+',
+    '身長:〜150': '身長〜150cm',
+  };
+  userTags.forEach(tag => {
+    if (bodyMap[tag] && boardBody.some(b => b.trim() === bodyMap[tag])) score += 10;
+  });
+  if (userTags.has('重さ:軽い') && boardBody.some(b => b.trim() === '軽い板希望')) score += 10;
+  if (userTags.has('重さ:重い') && boardBody.some(b => b.trim() === '重い板希望')) score += 10;
+  if (userTags.has('サイズ:短め') && boardBody.some(b => b.trim() === '短め希望')) score += 10;
+  if (userTags.has('サイズ:長め') && boardBody.some(b => b.trim() === '長め希望')) score += 10;
+
+  // フレックスタグ照合（15点）
+  if (userTags.has('フレックス:ソフト') && boardFlex.includes('ソフト')) score += 15;
+  if (userTags.has('フレックス:ハード') && boardFlex.includes('ハード')) score += 15;
+
+  // デザインタグ照合（デザイン優先なら20点、通常10点）
+  const designPts = isDesignPriority ? 20 : 10;
+  userTags.forEach(tag => {
+    const dm = {
+      'デザイン:かわいい':'デザイン：かわいい','デザイン:シンプル':'デザイン：シンプル',
+      'デザイン:木目':'デザイン：木目','デザイン:かっこいい':'デザイン：かっこいい',
+    };
+    if (dm[tag] && boardDesign.some(d => d.trim() === dm[tag])) score += designPts;
+  });
+
+  // 初心者ボーナス（除外せずランキング調整）
+  if (userTags.has('経験:初心者')) {
+    if (boardLevel.includes('初心者')) score += 15;
+  }
+
+  return score;
+}
+
+function showResults() {
+  document.getElementById('loading-screen').classList.add('hidden');
+  document.getElementById('results-screen').classList.remove('hidden');
+
+  const userTags = buildUserProfile();
+  const budgetLevel = getBudgetLevel(userTags);
+  const isDesignPriority = userTags.has('優先:デザイン');
+
+  // スコア計算
+  const scored = boardsData.map(b => ({
+    board: b,
+    score: scoreBoard(b, userTags, budgetLevel, isDesignPriority)
+  })).filter(x => x.score > -30).sort((a,b) => b.score - a.score);
+
+  const top5 = scored.slice(0, 5);
+  const maxScore = top5[0]?.score || 1;
+
+  // プロファイルタグ表示
+  const profileEl = document.getElementById('profile-tags');
+  const displayTags = {
+    'スタイル:ダンシング':'ダンシング', 'スタイル:トリック':'トリック',
+    'スタイル:カービング':'カービング', 'スタイル:クルージング':'クルージング',
+    '志向:競技':'競技志向', '志向:楽しむ':'楽しむ志向',
+    '経験:初心者':'初心者', '経験:中級者':'中級者', '経験:上級者':'上級者',
+    'フレックス:ソフト':'ソフトフレックス希望', 'フレックス:ハード':'ハードフレックス希望',
+    '重さ:軽い':'軽い板希望', '重さ:重い':'重い板希望',
+    'デザイン:かわいい':'かわいい系', 'デザイン:シンプル':'シンプル系',
+    'デザイン:木目':'木目系', 'デザイン:かっこいい':'かっこいい系',
+  };
+  profileEl.innerHTML = '';
+  userTags.forEach(tag => {
+    if (displayTags[tag]) {
+      const el = document.createElement('span');
+      el.className = 'profile-tag';
+      el.textContent = displayTags[tag];
+      profileEl.appendChild(el);
+    }
+  });
+
+  // 結果テキスト
+  const styleTag = [...userTags].find(t => t.startsWith('スタイル:'));
+  const styleName = styleTag ? styleTag.replace('スタイル:','') : 'あなたのスタイル';
+  document.getElementById('results-sub').textContent =
+    `${styleName}志向のあなたにおすすめのデッキです。上位から試してみてください。`;
+
+  // 結果カード
+  const listEl = document.getElementById('results-list');
+  listEl.innerHTML = '';
+
+  if (top5.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:2rem 0;font-size:14px;">条件に合う板が見つかりませんでした。予算を上げるか、条件を変えて再診断してみてください。</div>';
+    return;
+  }
+
+  top5.forEach((item, i) => {
+    const b = item.board;
+    const pct = Math.round((item.score / maxScore) * 100);
+    const isBeginner = userTags.has('経験:初心者') && (b['初心者適性']||'').includes('初心者');
+    const card = document.createElement('div');
+    card.className = 'result-card' + (i === 0 ? ' rank1' : '');
+
+    const styleTags = (b['スタイルタグ']||'').split(',').filter(Boolean);
+    const tagsHTML = styleTags.map(t => `<span class="result-tag">${t.trim()}</span>`).join('');
+    const beginnerHTML = isBeginner ? '<span class="beginner-badge">初心者向け</span>' : '';
+    const noteHTML = b['備考'] ? `<div class="result-note">${b['備考']}</div>` : '';
+
+    card.innerHTML = `
+      <div class="result-rank-row">
+        <span class="rank-badge ${i===0?'gold':''}">No.${i+1}</span>
+        ${beginnerHTML}
+      </div>
+      <div class="result-brand">${b['ブランド']}</div>
+      <div class="result-model" style="margin-bottom:10px">${b['モデル']}</div>
+      <div class="score-row">
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${pct}%"></div></div>
+        <span class="score-num">マッチ度 ${pct}%</span>
+      </div>
+      <div class="result-tags">${tagsHTML}</div>
+      ${noteHTML}
+    `;
+    listEl.appendChild(card);
+  });
+
+  // 補足情報（上位3ブランドに関係するもの）
+  const topBrands = top5.slice(0,3).map(x => x.board['ブランド']);
+  const relatedSup = supplementData.filter(s =>
+    topBrands.some(b => s['ブランド'] && s['ブランド'].includes(b))
+  ).slice(0, 4);
+
+  const supList = document.getElementById('supplement-list');
+  supList.innerHTML = '';
+  if (relatedSup.length === 0) {
+    document.getElementById('supplement-section').classList.add('hidden');
+  } else {
+    relatedSup.forEach(s => {
+      const card = document.createElement('div');
+      card.className = 'supplement-card';
+      card.innerHTML = `
+        <div class="supplement-brand">${s['ブランド']} / ${s['モデル']||'全般'}</div>
+        <div class="supplement-cat">${s['カテゴリ']||''}</div>
+        <div class="supplement-text">${s['補足情報']||''}</div>
+      `;
+      supList.appendChild(card);
+    });
+  }
+}
+
+function restart() {
+  currentQ = 0;
+  answers = [];
+  boardsData = [];
+  supplementData = [];
+  document.getElementById('results-screen').classList.add('hidden');
+  document.getElementById('quiz-screen').classList.remove('hidden');
+  document.getElementById('supplement-section').classList.remove('hidden');
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
