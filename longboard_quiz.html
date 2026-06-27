@@ -8,16 +8,16 @@
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
 
   :root {
-    --bg: #0E0E0E;
-    --surface: #1A1A1A;
-    --surface2: #242424;
-    --border: rgba(255,255,255,0.08);
-    --border-hover: rgba(255,255,255,0.18);
-    --text: #F0EEE8;
-    --text-sub: #888680;
-    --accent: #C8F041;
-    --accent-dark: #9DBF1E;
-    --accent-bg: rgba(200,240,65,0.08);
+    --bg: #F5F4F0;
+    --surface: #FFFFFF;
+    --surface2: #EDECE8;
+    --border: rgba(0,0,0,0.08);
+    --border-hover: rgba(0,0,0,0.18);
+    --text: #1C1C1A;
+    --text-sub: #6B6960;
+    --accent: #2D5A3D;
+    --accent-dark: #1E3D2A;
+    --accent-bg: rgba(45,90,61,0.08);
     --radius: 12px;
   }
 
@@ -43,13 +43,16 @@
 
   /* Header */
   .header {
-    padding: 2.5rem 0 2rem;
+    padding: 2.5rem 1.5rem 2rem;
     text-align: center;
+    background: var(--accent);
+    border-radius: 16px;
+    margin-bottom: 1rem;
   }
   .header-eyebrow {
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--accent);
+    color: rgba(255,255,255,0.7);
     text-transform: uppercase;
     margin-bottom: 10px;
   }
@@ -57,11 +60,11 @@
     font-size: 26px;
     font-weight: 700;
     line-height: 1.3;
-    color: var(--text);
+    color: #FFFFFF;
   }
   .header-sub {
     font-size: 13px;
-    color: var(--text-sub);
+    color: rgba(255,255,255,0.8);
     margin-top: 8px;
     line-height: 1.7;
   }
@@ -170,7 +173,7 @@
     padding: 12px 28px;
     font-size: 13px;
     font-weight: 600;
-    color: #0E0E0E;
+    color: #FFFFFF;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s;
@@ -200,12 +203,15 @@
   /* Results */
   .results-header {
     text-align: center;
-    padding: 1.5rem 0 1.75rem;
+    padding: 1.5rem 1.5rem 1.75rem;
+    background: var(--accent);
+    border-radius: 16px;
+    margin-bottom: 1.25rem;
   }
   .results-eyebrow {
     font-size: 11px;
     letter-spacing: 0.15em;
-    color: var(--accent);
+    color: rgba(255,255,255,0.7);
     text-transform: uppercase;
     margin-bottom: 8px;
   }
@@ -213,10 +219,11 @@
     font-size: 22px;
     font-weight: 700;
     margin-bottom: 6px;
+    color: #FFFFFF;
   }
   .results-sub {
     font-size: 13px;
-    color: var(--text-sub);
+    color: rgba(255,255,255,0.85);
     line-height: 1.7;
   }
 
@@ -245,7 +252,7 @@
   }
   .result-card.rank1 {
     border-color: var(--accent);
-    background: rgba(200,240,65,0.04);
+    background: rgba(45,90,61,0.04);
   }
   .result-rank-row {
     display: flex;
@@ -281,6 +288,7 @@
     border-radius: 2px;
     background: var(--accent);
     transition: width 0.6s ease;
+    opacity: 0.85;
   }
   .score-num {
     font-size: 12px;
@@ -313,7 +321,7 @@
     font-size: 10px;
     padding: 2px 8px;
     border-radius: 4px;
-    background: rgba(200,240,65,0.15);
+    background: rgba(45,90,61,0.12);
     color: var(--accent);
     font-weight: 500;
   }
@@ -439,9 +447,9 @@ const questions = [
     id:'q1', axis:'きっかけ',
     text:'ロングボードを始めたいと思ったきっかけに近いのはどれ？',
     options:[
-      {text:'かっこいい・おしゃれな動きを動画で見て憧れた', tags:['スタイル:トリック','スタイル:ダンシング']},
+      {text:'かっこいい・おしゃれな動きを動画で見て憧れた', tags:[]},
       {text:'景色のいい場所や街中を気持ちよく走りたい', tags:['スタイル:クルージング']},
-      {text:'音楽に合わせて踊るように滑りたい', tags:['スタイル:ダンシング']},
+      {text:'音楽に合わせて踊るように滑りたい', tags:[]},
       {text:'友達に誘われた・なんとなく興味があった', tags:['経験:初心者','志向:楽しむ']},
     ]
   },
@@ -830,10 +838,12 @@ function showResults() {
   });
 
   // 結果テキスト
-  const styleTag = [...userTags].find(t => t.startsWith('スタイル:'));
-  const styleName = styleTag ? styleTag.replace('スタイル:','') : 'あなたのスタイル';
+  // Q2（index 1）の回答からスタイルを確定
+  const q2AnswerIdx = answers[1];
+  const q2StyleMap = ['ダンシング', 'トリック', 'カービング', 'クルージング'];
+  const primaryStyle = q2StyleMap[q2AnswerIdx] || 'あなたのスタイル';
   document.getElementById('results-sub').textContent =
-    `${styleName}志向のあなたにおすすめのデッキです。上位から試してみてください。`;
+    `${primaryStyle}志向のあなたにおすすめのデッキです。上位から試してみてください。`;
 
   // 結果カード
   const listEl = document.getElementById('results-list');
